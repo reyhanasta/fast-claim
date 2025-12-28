@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\BackupDashboard;
+use App\Livewire\ClaimForm;
 use App\Livewire\ClaimsList;
 use App\Livewire\Dashboard\BpjsClaimDashboard;
 use App\Livewire\Settings\Appearance;
@@ -20,6 +21,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/claims', ClaimsList::class)
         ->name('claims.list');
+
+    Route::get('claim-form', ClaimForm::class)->name('claim-form');
+
 
     // Download routes
     Route::get('/claims/{claim}/download', function (App\Models\BpjsClaim $claim) {
@@ -99,6 +103,7 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-Route::get('bpjs-rajal-form', \App\Livewire\BpjsRawatJalanForm::class)->middleware(['auth', 'verified'])->name('bpjs-rajal-form');
+// Route::get('bpjs-rajal-form', \App\Livewire\BpjsRawatJalanForm::class)->middleware(['auth', 'verified'])->name('bpjs-rajal-form');
+Route::get('claim-form', ClaimForm::class)->name('claim-form');
 
 require __DIR__.'/auth.php';

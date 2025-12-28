@@ -13,7 +13,7 @@
                         Kelola dan cari klaim yang telah dibuat
                     </p>
                 </div>
-                <flux:button icon="plus" variant="primary" href="{{ route('bpjs-rajal-form') }}" wire:navigate>
+                <flux:button icon="plus" variant="primary" href="{{ route('claim-form') }}" wire:navigate>
                     Buat Klaim Baru
                 </flux:button>
             </div>
@@ -89,7 +89,7 @@
                         Belum ada klaim yang dibuat pada periode ini
                     @endif
                 </p>
-                <flux:button variant="primary" href="{{ route('bpjs-rajal-form') }}" wire:navigate>
+                <flux:button variant="primary" href="{{ route('claim-form') }}" wire:navigate>
                     Buat Klaim Pertama
                 </flux:button>
             </div>
@@ -116,7 +116,7 @@
                                     </h3>
                                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                         No. SEP: <span class="font-mono text-gray-700 dark:text-gray-300">{{ $claim->no_sep
-                                            }}</span>
+                                                    }}</span>
                                     </p>
                                 </div>
                             </div>

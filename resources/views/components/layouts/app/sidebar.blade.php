@@ -21,8 +21,8 @@
                 <flux:navlist.item icon="document-text" :href="route('claims.list')"
                     :current="request()->routeIs('claims.list')" wire:navigate>Daftar Klaim
                 </flux:navlist.item>
-                <flux:navlist.item icon="clipboard-document-check" :href="route('bpjs-rajal-form')"
-                    :current="request()->routeIs('bpjs-rajal-form')" wire:navigate>{{ __('Tambah Klaim') }}
+                <flux:navlist.item icon="clipboard-document-check" :href="route('claim-form')"
+                    :current="request()->routeIs('claim-form')" wire:navigate>{{ __('Tambah Klaim') }}
                 </flux:navlist.item>
             </flux:navlist.group>
 

@@ -25,7 +25,7 @@ use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
-class BpjsRawatJalanForm extends Component
+class ClaimForm extends Component
 {
     use HasAlerts, WithFileUploads;
 
@@ -345,7 +345,7 @@ class BpjsRawatJalanForm extends Component
             $this->showSuccessAlert('Klaim berhasil dibuat!', 'Dokumen telah digabung dan disimpan');
 
             // Redirect to claims list or dashboard
-            $this->redirect(route('bpjs-rajal-form'), navigate: true);
+            $this->redirect(route('claim-form'), navigate: true);
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('BPJS Claim Error', [
@@ -370,7 +370,7 @@ class BpjsRawatJalanForm extends Component
 
     public function render()
     {
-        return view('livewire.bpjs-rawat-jalan-form');
+        return view('livewire.claim-form');
     }
 
     // ========================================
