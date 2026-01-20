@@ -15,11 +15,12 @@ class SepDataProcessor
      */
     public function validateExtractedData(array $data): void
     {
+       
         $requiredFields = [
             'sep_number' => 'Nomor SEP',
             'patient_name' => 'Nama Pasien',
-            'medical_record_number' => 'Nomor Rekam Medis',
-            'bpjs_serial_number' => 'Nomor Kartu BPJS',
+            // 'medical_record_number' => 'Nomor Rekam Medis',
+            'bpjs_number' => 'Nomor Kartu BPJS',
         ];
 
         $missingFields = [];
@@ -85,7 +86,7 @@ class SepDataProcessor
             'medical_record_number' => $extractedData['medical_record_number'] ?? '',
             'patient_name' => $extractedData['patient_name'] ?? '',
             'sep_number' => $extractedData['sep_number'] ?? '',
-            'bpjs_serial_number' => $extractedData['bpjs_serial_number'] ?? '',
+            'bpjs_number' => $extractedData['bpjs_number'] ?? '',
             'patient_class' => $this->normalizePatientClass($extractedData['patient_class'] ?? ''),
             'jenis_rawatan' => $extractedData['jenis_rawatan'] ?? 'RJ',
             'sep_date' => $extractedData['sep_date'] ?? null,

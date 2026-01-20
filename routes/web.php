@@ -2,6 +2,7 @@
 
 use App\Livewire\BackupDashboard;
 use App\Livewire\ClaimForm;
+use App\Livewire\ClaimFormAssist;
 use App\Livewire\ClaimsList;
 use App\Livewire\Dashboard\BpjsClaimDashboard;
 use App\Livewire\Settings\Appearance;
@@ -56,39 +57,6 @@ Route::middleware(['auth'])->group(function () {
         );
     })->name('claims.download-lip');
 
-    Route::get('/claims/download-multiple', function () {
-        $claimIds = session('download_claims', []);
-
-        if (empty($claimIds)) {
-            abort(404, 'Tidak ada klaim yang dipilih');
-        }
-
-        $claims = App\Models\BpjsClaim::whereIn('id', $claimIds)->get();
-        $disk = Illuminate\Support\Facades\Storage::disk('shared');
-
-        $zipFileName = 'klaim_'.now()->format('YmdHis').'.zip';
-        $zipPath = storage_path('app/temp/'.$zipFileName);
-
-        if (! file_exists(dirname($zipPath))) {
-            mkdir(dirname($zipPath), 0755, true);
-        }
-
-        $zip = new ZipArchive;
-        if ($zip->open($zipPath, ZipArchive::CREATE) === true) {
-            foreach ($claims as $claim) {
-                if ($disk->exists($claim->file_path)) {
-                    $zip->addFile($disk->path($claim->file_path), basename($claim->file_path));
-                }
-            }
-            $zip->close();
-        }
-
-        // Clear session
-        session()->forget('download_claims');
-
-        return response()->download($zipPath)->deleteFileAfterSend(true);
-    })->name('claims.download-multiple');
-
     Route::redirect('settings', 'settings/profile');
 
     Route::get('settings/profile', Profile::class)->name('settings.profile');
@@ -104,6 +72,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Route::get('bpjs-rajal-form', \App\Livewire\BpjsRawatJalanForm::class)->middleware(['auth', 'verified'])->name('bpjs-rajal-form');
+Route::get('claim-form-assist', ClaimFormAssist::class)->name('claim-form-assist');
 Route::get('claim-form', ClaimForm::class)->name('claim-form');
 
 require __DIR__.'/auth.php';

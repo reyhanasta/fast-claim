@@ -25,7 +25,7 @@ use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
-class ClaimForm extends Component
+class ClaimFormAssist extends Component
 {
     use HasAlerts, WithFileUploads;
 
@@ -60,7 +60,7 @@ class ClaimForm extends Component
     public ?TemporaryUploadedFile $fileLIP = null;
 
     // Patient data
-    #[Validate('required|string|max:50')]
+    #[Validate('string|max:50')]
     public string $medical_record_number = '';
 
     #[Validate('required|string|max:100')]
@@ -341,7 +341,7 @@ class ClaimForm extends Component
             $this->showSuccessAlert('Klaim berhasil dibuat!', 'Dokumen telah digabung dan disimpan');
 
             // Redirect to claims list or dashboard
-            $this->redirect(route('claim-form'), navigate: true);
+            $this->redirect(route('claim-form-assist'), navigate: true);
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('BPJS Claim Error', [
@@ -366,7 +366,7 @@ class ClaimForm extends Component
 
     public function render()
     {
-        return view('livewire.claim-form');
+        return view('livewire.claim-form-assist');
     }
 
     // ========================================
@@ -431,7 +431,7 @@ class ClaimForm extends Component
         $pdfReadService->ensureSinglePage($this->sepFile);
 
         $pdfText = $pdfReadService->getPdfTextwithSpatie($this->sepFile);
-        $extractedData = $pdfReadService->extractPdf($pdfText);
+        $extractedData = $pdfReadService->extractPdfAssist($pdfText);
 
         if (! $extractedData) {            
             throw new \RuntimeException('Format dokumen SEP tidak valid atau tidak dapat dibaca');

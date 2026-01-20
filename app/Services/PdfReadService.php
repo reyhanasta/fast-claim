@@ -7,6 +7,8 @@ use Spatie\PdfToText\Pdf;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use setasign\Fpdi\Fpdi;
 
+use function Laravel\Prompts\text;
+
 class PdfReadService
 {
     /**
@@ -54,7 +56,7 @@ class PdfReadService
         if (! preg_match('/No\.Kartu[^\:]*:\s*([0-9]+)\s*\(\s*MR\.?\s*([0-9]+)\s*\)/i', $text, $m)) {
             throw new \RuntimeException('No. Kartu BPJS atau No. RM tidak ditemukan. Format: No.Kartu : 0001234567890 (MR. 123456)');
         }
-        $data['bpjs_serial_number'] = trim($m[1]);
+        $data['bpjs_number'] = trim($m[1]);
         $data['medical_record_number'] = trim($m[2]);
 
         // 🔹 FAIL FAST: Nama Peserta - Field WAJIB
@@ -120,6 +122,200 @@ class PdfReadService
 
         return $data;
     }
+    
+    
+
+    public function extractPdfAssist(string $text): array
+    {
+        Log::info('Starting PDF extraction with extractPdfAssist');
+
+        try {
+            // Step 1: Normalize text encoding and whitespace
+            $text = $this->normalizeText($text);
+
+            // Step 2: Normalize label variations
+            $text = $this->normalizeLabels($text);
+
+            // Step 3: Parse multi-column header
+            $text = $this->normalizeMultiColumnFields($text);
+
+            // Step 4: Parse loose value rows
+            $text = $this->normalizeLooseValueRow($text);
+
+            // Step 5: Extract fields
+            $raw = $this->parseFields($text);
+
+            // Step 6: Apply domain rules
+            $data = $this->applyDomainRules($raw);
+
+            Log::info('PDF extraction successful', [
+                'sep_number' => $data['sep_number'] ?? 'N/A',
+                'patient_name' => $data['patient_name'] ?? 'N/A'
+            ]);
+
+            return $data;
+
+        } catch (\Throwable $e) {
+            Log::error('PDF extraction failed', [
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    private function normalizeText(string $text): string
+    {
+        $text = mb_convert_encoding($text, 'UTF-8', 'auto');
+        $text = preg_replace('/\x{00A0}/u', ' ', $text);
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        $text = preg_replace('/[ \t]+/', ' ', $text);
+
+        return trim($text);
+    }
+
+    private function normalizeLabels(string $text): string
+    {
+        $labels = [
+            '/\bNo\.?\s*SEP\b/i'        => 'No.SEP',
+            '/\bTgl\.?\s*SEP\b/i'       => 'Tgl.SEP',
+            '/\bNo\.?\s*Kartu\b/i'      => 'No.Kartu',
+            '/\bNama\s*Peserta\b/i'     => 'Nama Peserta',
+            '/\bJns\.?\s*Rawat\b/i'     => 'Jns.Rawat',
+            '/\bKls\.?\s*Rawat\b/i'     => 'Kls.Rawat',
+        ];
+
+        foreach ($labels as $pattern => $canonical) {
+            $text = preg_replace($pattern, $canonical, $text);
+        }
+
+        return $text;
+    }
+
+    private function normalizeMultiColumnFields(string $text): string
+    {
+        // Updated pattern to match the multi-line header with MR extraction
+        $pattern = '/Tgl\.SEP\s+No\.Kartu\s+Nama Peserta.*?\n\s*:\s*([0-9\-]+)\s*:\s*([0-9]+)\s*\(\s*([0-9]+)\s*\)\s*:\s*([^\n]+)/i';
+        if (preg_match($pattern, $text, $m)) {
+            $replacement =
+                "Tgl.SEP : {$m[1]}\n" .
+                "No.Kartu : {$m[2]}\n" .
+                "Nama Peserta : {$m[4]}";
+
+            $text = preg_replace($pattern, $replacement, $text);
+        }
+   
+        return $text;
+    }
+
+    private function extractMultiColumnHeader(string $text): array
+{
+    $extracted = [];
+
+    // Extract MR from the original multi-column line before it gets normalized
+    // $mrPattern = '/Tgl\.SEP.*?\n\s*:\s*[0-9\-]+\s*:\s*[0-9]+\s*\(\s*([0-9]+)\s*\)/i';
+    
+    // if (preg_match($mrPattern, $text, $mrMatch)) {
+    //     $extracted['medical_record_number'] = trim($mrMatch[1]);  // 238136 (MR from inside parentheses)
+    // }
+
+    // Pattern to match normalized format after normalizeMultiColumnFields
+    $pattern = '/Tgl\.SEP\s*:\s*([0-9\-]+).*?\nNo\.Kartu\s*:\s*([0-9]+).*?\nNama Peserta\s*:\s*([^\n]+)/i';
+
+    if (preg_match($pattern, $text, $m)) {
+        // Clean up patient name to remove extra info
+        $patientName = trim($m[3]);
+        $patientName = preg_replace('/\s*:\s*[^\n]+$/', '', $patientName);  // Remove everything after colon
+
+        $extracted = array_merge($extracted, [
+            'sep_date'              => trim($m[1]),  // 2026-01-19
+            'bpjs_number'           => trim($m[2]),  // 0002138667153 (No.Kartu)
+            'patient_name'          => $patientName,  // PARSAULIAN SILALAHI (cleaned)
+        ]);
+    }
+
+    return $extracted;
+}
+
+private function parseFields(string $text): array
+{
+    $data = [];
+
+    // Extract multi-column fields first to preserve medical_record_number
+    $headerData = $this->extractMultiColumnHeader($text);
+    $data = array_merge($data, $headerData);
+
+    // Extract simple single-line fields
+    $data['sep_number'] = $this->extractField('No.SEP', '/No\.SEP\s*:\s*([A-Z0-9\/\.]+)/i', $text);
+
+    // Extract treatment type (normalized by normalizeLooseValueRow)
+    $data['rawat_text'] = $this->extractField('Jns.Rawat', '/Jns\.Rawat\s*:\s*(R\.Jalan|R\.Inap)/i', $text);
+
+    // Extract class from normalized text
+    $data['Kls.Rawat'] = $this->extractField('Kls.Rawat', '/Kls\.Rawat\s*:\s*([^\n]+)/i', $text);
+
+    return $data;
+}
+
+private function extractField(string $label, string $pattern, string $text): string
+{
+    if (preg_match($pattern, $text, $m)) {
+        return trim($m[1]);
+    }
+
+    throw new \RuntimeException("Field {$label} tidak ditemukan.");
+}
+
+    private function applyDomainRules(array $data): array
+    {
+        // Map treatment type: R.Jalan -> RJ, R.Inap -> RI
+        if (isset($data['rawat_text'])) {
+            $data['jenis_rawatan'] = match (strtoupper($data['rawat_text'])) {
+                'R.JALAN' => 'RJ',
+                'R.INAP'  => 'RI',
+                default   => throw new \RuntimeException('Jenis Rawat tidak valid: ' . $data['rawat_text'])
+            };
+            unset($data['rawat_text']);
+        }
+
+        // Normalize patient class from "KELAS 1" to "1"
+        if (isset($data['Kls.Rawat'])) {
+            $data['patient_class'] = $this->normalizeClass($data['Kls.Rawat']);
+            unset($data['Kls.Rawat']);
+        }
+
+        // Validate date
+        if (isset($data['sep_date']) && !strtotime($data['sep_date'])) {
+            throw new \RuntimeException('Tanggal SEP tidak valid: ' . $data['sep_date']);
+        }
+
+        return $data;
+    }
+
+    private function normalizeClass(string $classText): string
+    {
+        if (preg_match('/(\d+)/', $classText, $m)) {
+            return $m[1];
+        }
+        throw new \RuntimeException('Kelas rawat tidak valid: ' . $classText);
+    }
+
+    private function normalizeLooseValueRow(string $text): string
+    {
+        // Match: Jns.Rawat Jns.Kunjungan Kls.Hak Kls.Rawat Penjamin
+        // With values like: : R.Jalan :: KELAS 1 ::
+        $pattern = '/Jns\.Rawat\s+Jns\.Kunjungan\s+Kls\.Hak\s+Kls\.Rawat\s+Penjamin\s*\n\s*:\s*(R\.(?:Jalan|Inap))\s*::\s*(KELAS\s*[1-3])\s*::/i';
+
+        if (preg_match($pattern, $text, $m)) {
+            // Append structured fields to text
+            $text .= "\nJns.Rawat : " . trim($m[1]);
+            $text .= "\nKls.Rawat : " . trim($m[2]);
+        }
+
+        return $text;
+    }
+
+
+
 
     /**
      * Ensure the uploaded PDF only contains a single page.

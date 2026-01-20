@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php debug_format:*)",
+      "Bash(php:*)"
+    ]
+  }
+}
