@@ -115,8 +115,6 @@ Interface menggunakan **Flux UI** dan **Tailwind CSS 4** dengan dukungan dark mo
 -   📁 Penyimpanan terstruktur berdasarkan periode dan jenis rawatan
 -   💾 Backup otomatis ke lokasi terpisah
 -   👥 Manajemen user dengan role (Admin/Operator)
--   🎨 Dark mode & responsive design
--   🔧 Folder browser untuk setting lokasi storage via UI
 -   📱 Mobile-friendly (akses via tablet/smartphone)
 
 ## ✨ Fitur Utama
@@ -129,8 +127,6 @@ Interface menggunakan **Flux UI** dan **Tailwind CSS 4** dengan dukungan dark mo
 | **Backup Otomatis** | Backup file ke lokasi terpisah dengan struktur folder yang sama              |
 | **Dashboard**       | Monitoring jumlah klaim, statistik per periode, dan status backup            |
 | **Multi User**      | Role Admin dan Operator dengan hak akses berbeda                             |
-| **Dark Mode**       | Dukungan tema terang dan gelap                                               |
-| **Settings**        | Pengaturan profil klinik dan lokasi folder penyimpanan dengan folder browser |
 
 ## 🛠️ Tech Stack
 
