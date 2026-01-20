@@ -30,16 +30,21 @@
                 style="animation-delay: 2s"></div>
 
             {{-- Content --}}
-            <div class="relative z-10 flex flex-col justify-center items-center w-full p-12 text-white">
+            <div class="relative z-10 flex flex-col justify-center items-center w-full p-12 text-white gap-4">
                 {{-- App Icon --}}
-                <div class="mb-8 p-4 bg-white/95 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl">
-                    <img src="{{ asset('FastClaim_Icon.png') }}" alt="FastClaim" class="w-24 h-24 object-contain" />
-                </div>
+                <div class="flex flex-col gap-4 items-center justify-center">
 
-                <h1 class="text-4xl font-bold mb-4 text-center">{{ config('app.name', 'Fast Claim') }}</h1>
-                <p class="text-xl text-white/80 text-center max-w-md mb-8">
-                    Sistem Klaim BPJS yang Cepat, Mudah, dan Terintegrasi
-                </p>
+                    <div class="flex flex-row gap-2 items-center">
+                        <div class="p-3 bg-white/95 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl">
+                            <img src="{{ asset('FastClaim_Icon.png') }}" alt="FastClaim"
+                                class="w-12 h-12 object-contain" />
+                        </div>
+                        <h1 class="text-4xl font-bold ">{{ config('app.name', 'Fast Claim') }}</h1>
+                    </div>
+                    <p class="text-lg text-white/80 text-center max-w-md ">
+                        Sistem Klaim BPJS yang Cepat, Mudah, dan Terintegrasi
+                    </p>
+                </div>
 
                 {{-- Features --}}
                 <div class="space-y-4 max-w-sm">
