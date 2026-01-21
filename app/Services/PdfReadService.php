@@ -136,16 +136,13 @@ class PdfReadService
             // Step 2: Normalize label variations
             $text = $this->normalizeLabels($text);
 
-            // Step 3: Parse multi-column header
-            $text = $this->normalizeMultiColumnFields($text);
-
-            // Step 4: Parse loose value rows
+            // Step 3: Parse loose value rows (multi-column parsing disabled for new format)
             $text = $this->normalizeLooseValueRow($text);
 
-            // Step 5: Extract fields
+            // Step 4: Extract fields
             $raw = $this->parseFields($text);
 
-            // Step 6: Apply domain rules
+            // Step 5: Apply domain rules
             $data = $this->applyDomainRules($raw);
 
             Log::info('PDF extraction successful', [
@@ -187,50 +184,34 @@ class PdfReadService
         foreach ($labels as $pattern => $canonical) {
             $text = preg_replace($pattern, $canonical, $text);
         }
+       
 
-        return $text;
-    }
-
-    private function normalizeMultiColumnFields(string $text): string
-    {
-        // Updated pattern to match the multi-line header with MR extraction
-        $pattern = '/Tgl\.SEP\s+No\.Kartu\s+Nama Peserta.*?\n\s*:\s*([0-9\-]+)\s*:\s*([0-9]+)\s*\(\s*([0-9]+)\s*\)\s*:\s*([^\n]+)/i';
-        if (preg_match($pattern, $text, $m)) {
-            $replacement =
-                "Tgl.SEP : {$m[1]}\n" .
-                "No.Kartu : {$m[2]}\n" .
-                "Nama Peserta : {$m[4]}";
-
-            $text = preg_replace($pattern, $replacement, $text);
-        }
-   
         return $text;
     }
 
     private function extractMultiColumnHeader(string $text): array
-{
-    $extracted = [];
+    {
+        $extracted = [];
 
-    // Extract MR from the original multi-column line before it gets normalized
-    // $mrPattern = '/Tgl\.SEP.*?\n\s*:\s*[0-9\-]+\s*:\s*[0-9]+\s*\(\s*([0-9]+)\s*\)/i';
-    
-    // if (preg_match($mrPattern, $text, $mrMatch)) {
-    //     $extracted['medical_record_number'] = trim($mrMatch[1]);  // 238136 (MR from inside parentheses)
-    // }
+    // Extract MR from No.Kartu line (format: No.Kartu : 0002138667153 ( 238136 ))
+    $mrPattern = '/No\.Kartu\s*:\s*[0-9]+\s*\(\s*([0-9]+)\s*\)/i';
+    if (preg_match($mrPattern, $text, $mrMatch)) {
+        $extracted['medical_record_number'] = trim($mrMatch[1]);
+    }
 
-    // Pattern to match normalized format after normalizeMultiColumnFields
-    $pattern = '/Tgl\.SEP\s*:\s*([0-9\-]+).*?\nNo\.Kartu\s*:\s*([0-9]+).*?\nNama Peserta\s*:\s*([^\n]+)/i';
+    // Extract sep_date (format: Tgl.SEP : 2026-01-19)
+    if (preg_match('/Tgl\.SEP\s*:\s*([0-9\-]+)/i', $text, $m)) {
+        $extracted['sep_date'] = trim($m[1]);
+    }
 
-    if (preg_match($pattern, $text, $m)) {
-        // Clean up patient name to remove extra info
-        $patientName = trim($m[3]);
-        $patientName = preg_replace('/\s*:\s*[^\n]+$/', '', $patientName);  // Remove everything after colon
+    // Extract bpjs_number (format: No.Kartu : 0002138667153)
+    if (preg_match('/No\.Kartu\s*:\s*([0-9]+)/i', $text, $m)) {
+        $extracted['bpjs_number'] = trim($m[1]);
+    }
 
-        $extracted = array_merge($extracted, [
-            'sep_date'              => trim($m[1]),  // 2026-01-19
-            'bpjs_number'           => trim($m[2]),  // 0002138667153 (No.Kartu)
-            'patient_name'          => $patientName,  // PARSAULIAN SILALAHI (cleaned)
-        ]);
+    // Extract patient_name (format: Nama Peserta : PARSAULIAN SILALAHI)
+    if (preg_match('/Nama\s*Peserta\s*:\s*([^\n]+)/i', $text, $m)) {
+        $extracted['patient_name'] = trim($m[1]);
     }
 
     return $extracted;
