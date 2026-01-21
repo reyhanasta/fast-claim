@@ -43,7 +43,7 @@ class PdfReadService
         if (! preg_match('/No\.SEP\s*(?:\s*):\s*([\w\/\.-]+)/i', $text, $m)) {
             throw new \RuntimeException('No. SEP tidak ditemukan di file. Pastikan file SEP yang valid.');
         }
-
+        
         $data['sep_number'] = trim($m[1]);
 
         // 🔹 FAIL FAST: Tgl.SEP - Field WAJIB
@@ -122,13 +122,14 @@ class PdfReadService
 
         return $data;
     }
-
+    
+    
 
     public function extractPdfAssist(string $text): array
     {
         Log::info('Starting PDF extraction with extractPdfAssist');
 
-
+       
         try {
             // Step 1: Normalize text encoding and whitespace
             $text = $this->normalizeText($text);
@@ -162,7 +163,7 @@ class PdfReadService
 
     private function normalizeText(string $text): string
     {
-
+    
         $text = mb_convert_encoding($text, 'UTF-8', 'auto');
         $text = preg_replace('/\x{00A0}/u', ' ', $text);
         $text = str_replace(["\r\n", "\r"], "\n", $text);
@@ -185,7 +186,7 @@ class PdfReadService
         foreach ($labels as $pattern => $canonical) {
             $text = preg_replace($pattern, $canonical, $text);
         }
-
+       
 
         return $text;
     }
@@ -222,35 +223,18 @@ private function parseFields(string $text): array
 {
     $data = [];
 
-    // === FORMAT-BASED EXTRACTION (New resilient approach) ===
+    // Extract multi-column fields first to preserve medical_record_number
+    $headerData = $this->extractMultiColumnHeader($text);
+    $data = array_merge($data, $headerData);
 
-    // Jenis Rawatan: Find R.Jalan or R.Inap anywhere in text
-    $data['rawat_text'] = $this->extractJenisRawatanByFormat($text);
-
-    // Kelas Rawatan: Find KELAS 1/2/3 anywhere in text
-    $data['Kls.Rawat'] = $this->extractKelasRawatanByFormat($text);
-
-    // BPJS Number: 13 digits near No.Kartu label
-    $data['bpjs_number'] = $this->extractBpjsNumberNearLabel($text);
-
-    // MR Number: 6 digits in parentheses
-    $data['medical_record_number'] = $this->extractMrNumberByFormat($text);
-
-
-    // === LABEL-BASED EXTRACTION (Keep working as-is) ===
-
-    // No.SEP: Keep current method (working fine)
+    // Extract simple single-line fields
     $data['sep_number'] = $this->extractField('No.SEP', '/No\.SEP\s*:\s*([A-Z0-9\/\.]+)/i', $text);
 
-    // SEP Date: Keep current method (working fine)
-    if (preg_match('/Tgl\.SEP\s*:\s*([0-9\-]+)/i', $text, $m)) {
-        $data['sep_date'] = trim($m[1]);
-    }
+    // Extract treatment type (normalized by normalizeLooseValueRow)
+    $data['rawat_text'] = $this->extractField('Jns.Rawat', '/Jns\.Rawat\s*:\s*(R\.Jalan|R\.Inap)/i', $text);
 
-    // Patient Name: Keep label-based (no unique format)
-    if (preg_match('/Nama\s*Peserta\s*:\s*([^\n]+)/i', $text, $m)) {
-        $data['patient_name'] = trim($m[1]);
-    }
+    // Extract class from normalized text
+    // $data['Kls.Rawat'] = $this->extractField('Kls.Rawat', '/Kls\.Rawat\s*:\s*([^\n]+)/i', $text);
 
     return $data;
 }
@@ -292,7 +276,7 @@ private function extractField(string $label, string $pattern, string $text): str
 
     private function normalizeClass(string $classText): string
     {
-
+       
         if (preg_match('/(\d+)/', $classText, $m)) {
             return $m[1];
         }
@@ -316,13 +300,13 @@ private function extractField(string $label, string $pattern, string $text): str
 
     /**
      * Extract Jenis Rawatan by format (R.Jalan or R.Inap anywhere in text)
-     * Returns: 'R.Jalan' or 'R.Inap'
+     * Returns: 'RJ' or 'RI'
      */
     private function extractJenisRawatanByFormat(string $text): string
     {
         // Search for R.Jalan or R.Inap regardless of line breaks
         if (preg_match('/\bR\.(?:Jalan|Inap)\b/i', $text, $m)) {
-            return $m[0];
+            return strtoupper($m[0]) === 'R.JALAN' ? 'RJ' : 'RI';
         }
 
         throw new \RuntimeException('Jenis Rawatan (R.Jalan/R.Inap) tidak ditemukan.');
@@ -375,6 +359,9 @@ private function extractField(string $label, string $pattern, string $text): str
 
         throw new \RuntimeException('No. RM (6 digit dalam kurung) tidak ditemukan.');
     }
+
+
+
 
     /**
      * Ensure the uploaded PDF only contains a single page.

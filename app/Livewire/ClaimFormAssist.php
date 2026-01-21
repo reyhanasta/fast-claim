@@ -75,7 +75,7 @@ class ClaimFormAssist extends Component
     #[Validate('required|date')]
     public ?string $sep_date = null;
 
-    #[Validate('required|string|in:1,2,3', message: 'Kelas rawatan harus berupa 1, 2, atau 3')]
+    #[Validate('string|in:1,2,3', message: 'Kelas rawatan harus berupa 1, 2, atau 3')]
     public string $patient_class = '';
 
     #[Locked]
