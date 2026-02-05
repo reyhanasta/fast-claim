@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('no_rm')->nullable();
             $table->string('nama_pasien');
-            $table->string('no_kartu_bpjs');
+            $table->string('no_kartu_bpjs')->nullable();
             $table->string('no_sep')->unique();
             $table->string('jenis_rawatan');
             $table->string('kelas_rawatan')->nullable();

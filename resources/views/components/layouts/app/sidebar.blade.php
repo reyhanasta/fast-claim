@@ -32,6 +32,9 @@
                 <flux:navlist.item icon="document-magnifying-glass" :href="route('claim-form-assist')"
                     :current="request()->routeIs('claim-form-assist')" wire:navigate>{{ __('Tambah Klaim (Assist)') }}
                 </flux:navlist.item>
+                <flux:navlist.item icon="document" :href="route('claim-form-manual')"
+                    :current="request()->routeIs('claim-form-manual')" wire:navigate>{{ __('Tambah Klaim Manual') }}
+                </flux:navlist.item>
             </flux:navlist.group>
 
             @if(auth()->user()->isAdmin())
