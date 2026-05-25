@@ -70,6 +70,12 @@ class ClaimFormManual extends Component
     #[Validate('required|date')]
     public ?string $sep_date = null;
 
+    public string $selected_day = '';
+
+    public string $selected_month = '';
+
+    public string $selected_year = '';
+
     #[Validate('string|in:1,2,3', message: 'Kelas rawatan harus berupa 1, 2, atau 3')]
     public string $patient_class = '';
 
@@ -141,6 +147,43 @@ class ClaimFormManual extends Component
             'sep_date.date' => 'Tanggal SEP harus berupa format tanggal yang valid',
             'patient_name.required' => 'Nama pasien wajib diisi',
         ];
+    }
+
+    public function mount(): void
+    {
+        $this->selected_day = date('d');
+        $this->selected_month = date('m');
+        $this->selected_year = date('Y');
+        $this->updateSepDate();
+    }
+
+    public function updateSepDate(): void
+    {
+        if ($this->selected_day && $this->selected_month && $this->selected_year) {
+            $this->sep_date = sprintf(
+                '%04d-%02d-%02d',
+                (int) $this->selected_year,
+                (int) $this->selected_month,
+                (int) $this->selected_day
+            );
+        } else {
+            $this->sep_date = null;
+        }
+    }
+
+    public function updatedSelectedDay(): void
+    {
+        $this->updateSepDate();
+    }
+
+    public function updatedSelectedMonth(): void
+    {
+        $this->updateSepDate();
+    }
+
+    public function updatedSelectedYear(): void
+    {
+        $this->updateSepDate();
     }
 
     #[On('cancelUploadTimeout')]

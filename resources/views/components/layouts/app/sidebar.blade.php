@@ -26,18 +26,18 @@
 
 
             <flux:navlist.group :heading="__('Add Klaim')" class="grid">
-                <flux:navlist.item icon="clipboard-document-check" :href="route('claim-form')"
+                {{-- <flux:navlist.item icon="clipboard-document-check" :href="route('claim-form')"
                     :current="request()->routeIs('claim-form')" wire:navigate>{{ __('Tambah Klaim') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="document-magnifying-glass" :href="route('claim-form-assist')"
                     :current="request()->routeIs('claim-form-assist')" wire:navigate>{{ __('Tambah Klaim (Assist)') }}
-                </flux:navlist.item>
+                </flux:navlist.item> --}}
                 <flux:navlist.item icon="document" :href="route('claim-form-manual')"
                     :current="request()->routeIs('claim-form-manual')" wire:navigate>{{ __('Tambah Klaim Manual') }}
                 </flux:navlist.item>
             </flux:navlist.group>
 
-            @if(auth()->user()->isAdmin())
+            @if (auth()->user()->isAdmin())
                 <flux:navlist.group :heading="__('System')" class="grid">
                     <flux:navlist.item icon="server-stack" :href="route('backup.dashboard')"
                         :current="request()->routeIs('backup.dashboard')" wire:navigate>{{ __('Backup Monitor') }}
@@ -87,7 +87,8 @@
                     <flux:menu.separator />
 
                     <flux:menu.radio.group>
-                        <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}
+                        <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>
+                            {{ __('Settings') }}
                         </flux:menu.item>
                     </flux:menu.radio.group>
 
@@ -95,7 +96,8 @@
 
                     <form method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf
-                        <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
+                        <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle"
+                            class="w-full">
                             {{ __('Log Out') }}
                         </flux:menu.item>
                     </form>
@@ -134,7 +136,8 @@
                 <flux:menu.separator />
 
                 <flux:menu.radio.group>
-                    <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}
+                    <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>
+                        {{ __('Settings') }}
                     </flux:menu.item>
                 </flux:menu.radio.group>
 

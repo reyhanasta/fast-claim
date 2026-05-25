@@ -11,7 +11,7 @@
     <div class="max-w-4xl mx-auto">
         {{-- Header Section --}}
         {{-- Main Form After SEP Upload --}}
-        @if($showUploadedData)
+        @if (!$showUploadedData)
             <form wire:submit.prevent="submit" class="space-y-6 animate-fade-in">
                 {{-- PDF Preview Section --}}
                 <div
@@ -55,22 +55,20 @@
 
                     <div class="p-6">
                         {{-- Claim Details Form --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-gray-200 dark:border-gray-700">
+                        <div class="grid grid-cols-3 md:grid-cols-3 gap-4 border-gray-200 dark:border-gray-700">
                             {{-- Patient Name --}}
-                            <flux:field class="md:col-span-2">
+                            <flux:field>
                                 <flux:label class="flex items-center gap-2">
                                     <flux:icon.user class="w-4 h-4" />
                                     Nama Pasien
                                     <flux:text size="sm" class="text-rose-600 dark:text-rose-400">*</flux:text>
                                 </flux:label>
-                                <flux:input type="text" wire:model="patient_name" placeholder="Masukkan nama pasien" />
+                                <flux:input type="text" wire:model="patient_name"
+                                    placeholder="Masukkan nama pasien" />
                                 @error('patient_name')
                                     <flux:error>{{ $message }}</flux:error>
                                 @enderror
                             </flux:field>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
                             <flux:field>
                                 <flux:label class="flex items-center gap-2">
                                     <flux:icon.document-text class="w-4 h-4" />
@@ -82,17 +80,62 @@
                                     <flux:error>{{ $message }}</flux:error>
                                 @enderror
                             </flux:field>
-
                             <flux:field>
                                 <flux:label class="flex items-center gap-2">
+                                    <flux:icon.building-office-2 class="w-4 h-4" />
+                                    Jenis Rawatan
+                                    <flux:text size="sm" class="text-rose-600 dark:text-rose-400">*</flux:text>
+                                </flux:label>
+                                <flux:select wire:model="jenis_rawatan">
+                                    <flux:select.option value="RJ">Rawat Jalan</flux:select.option>
+                                    <flux:select.option value="RI">Rawat Inap</flux:select.option>
+                                </flux:select>
+                                @error('jenis_rawatan')
+                                    <flux:error>{{ $message }}</flux:error>
+                                @enderror
+                            </flux:field>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+
+
+                            <flux:field>
+                                <flux:label class="flex items-center gap-2 mb-1">
                                     <flux:icon.calendar class="w-4 h-4" />
                                     {{ $sep_date_label }}
                                     <flux:text size="sm" class="text-rose-600 dark:text-rose-400">*</flux:text>
                                 </flux:label>
-                                {{-- Use wire:model.live for RI so supporting docs form appears immediately --}}
-                                <flux:input type="date" wire:model.live="sep_date" />
+                                <div class="grid grid-cols-3 gap-2">
+                                    <flux:select wire:model.live="selected_day" placeholder="Hari">
+                                        @foreach (range(1, 31) as $day)
+                                            @php $formattedDay = sprintf('%02d', $day); @endphp
+                                            <flux:select.option value="{{ $formattedDay }}">{{ $formattedDay }}
+                                            </flux:select.option>
+                                        @endforeach
+                                    </flux:select>
+                                    <flux:select wire:model.live="selected_month" placeholder="Bulan">
+                                        <flux:select.option value="01">Januari</flux:select.option>
+                                        <flux:select.option value="02">Februari</flux:select.option>
+                                        <flux:select.option value="03">Maret</flux:select.option>
+                                        <flux:select.option value="04">April</flux:select.option>
+                                        <flux:select.option value="05">Mei</flux:select.option>
+                                        <flux:select.option value="06">Juni</flux:select.option>
+                                        <flux:select.option value="07">Juli</flux:select.option>
+                                        <flux:select.option value="08">Agustus</flux:select.option>
+                                        <flux:select.option value="09">September</flux:select.option>
+                                        <flux:select.option value="10">Oktober</flux:select.option>
+                                        <flux:select.option value="11">November</flux:select.option>
+                                        <flux:select.option value="12">Desember</flux:select.option>
+                                    </flux:select>
+                                    <flux:select wire:model.live="selected_year" placeholder="Tahun">
+                                        @foreach (range(date('Y') - 3, date('Y') + 1) as $year)
+                                            <flux:select.option value="{{ $year }}">{{ $year }}
+                                            </flux:select.option>
+                                        @endforeach
+                                    </flux:select>
+                                </div>
                                 @error('sep_date')
-                                    <flux:error>{{ $message }}</flux:error>
+                                    <flux:error class="mt-1">{{ $message }}</flux:error>
                                 @enderror
                             </flux:field>
 
@@ -108,20 +151,7 @@
                                 @enderror
                             </flux:field>
 
-                            <flux:field>
-                                <flux:label class="flex items-center gap-2">
-                                    <flux:icon.building-office-2 class="w-4 h-4" />
-                                    Jenis Rawatan
-                                    <flux:text size="sm" class="text-rose-600 dark:text-rose-400">*</flux:text>
-                                </flux:label>
-                                <flux:select wire:model="jenis_rawatan">
-                                    <flux:select.option value="RJ">Rawat Jalan</flux:select.option>
-                                    <flux:select.option value="RI">Rawat Inap</flux:select.option>
-                                </flux:select>
-                                @error('jenis_rawatan')
-                                    <flux:error>{{ $message }}</flux:error>
-                                @enderror
-                            </flux:field>
+
                         </div>
                     </div>
                 </div>
@@ -139,7 +169,8 @@
                                     Isi Tanggal Pulang Terlebih Dahulu
                                 </flux:heading>
                                 <flux:text class="text-amber-700 dark:text-amber-300">
-                                    Untuk klaim Rawat Inap, silakan isi <strong>Tanggal Pulang</strong> pada form di atas
+                                    Untuk klaim Rawat Inap, silakan isi <strong>Tanggal Pulang</strong> pada form di
+                                    atas
                                     terlebih dahulu
                                     sebelum mengupload dokumen pendukung.
                                 </flux:text>
@@ -171,11 +202,13 @@
                                     <div class="space-y-3">
                                         <div class="flex items-center gap-2">
                                             <div class="p-2 bg-slate-100 dark:bg-slate-900/30 rounded-lg">
-                                                <flux:icon.document-text class="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                                                <flux:icon.document-text
+                                                    class="w-5 h-5 text-slate-600 dark:text-slate-400" />
                                             </div>
                                             <div class="flex-grow">
                                                 <flux:heading size="sm">Resume Medis</flux:heading>
-                                                <flux:text size="sm" class="text-rose-600 dark:text-rose-400">*Wajib</flux:text>
+                                                <flux:text size="sm" class="text-rose-600 dark:text-rose-400">
+                                                    *Wajib</flux:text>
                                             </div>
                                         </div>
                                         <flux:input type="file" wire:model="resumeFile" accept=".pdf"
@@ -193,18 +226,22 @@
                                                 class="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-800">
                                                 <flux:icon.exclamation-circle
                                                     class="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0" />
-                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">{{ $message }}
+                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">
+                                                    {{ $message }}
                                                 </flux:text>
                                             </div>
                                         @enderror
-                                        @if($resumeFile)
+                                        @if ($resumeFile)
                                             <div
                                                 class="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-200 dark:border-slate-800">
                                                 <flux:icon.check-circle
                                                     class="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
-                                                <flux:text size="sm" class="text-slate-900 dark:text-slate-100 truncate flex-grow">
-                                                    {{ is_object($resumeFile) ? $resumeFile->getClientOriginalName() : 'Resume
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            Medis' }}
+                                                <flux:text size="sm"
+                                                    class="text-slate-900 dark:text-slate-100 truncate flex-grow">
+                                                    {{ is_object($resumeFile)
+                                                        ? $resumeFile->getClientOriginalName()
+                                                        : 'Resume
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Medis' }}
                                                 </flux:text>
                                             </div>
                                         @endif
@@ -219,7 +256,8 @@
                                             </div>
                                             <div class="flex-grow">
                                                 <flux:heading size="sm">File Billing</flux:heading>
-                                                <flux:text size="sm" class="text-rose-600 dark:text-rose-400">*Wajib</flux:text>
+                                                <flux:text size="sm" class="text-rose-600 dark:text-rose-400">
+                                                    *Wajib</flux:text>
                                             </div>
 
                                         </div>
@@ -238,18 +276,19 @@
                                                 class="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-800">
                                                 <flux:icon.exclamation-circle
                                                     class="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0" />
-                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">{{ $message }}
+                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">
+                                                    {{ $message }}
                                                 </flux:text>
                                             </div>
                                         @enderror
-                                        @if($billingFile)
+                                        @if ($billingFile)
                                             <div
                                                 class="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-200 dark:border-slate-800">
                                                 <flux:icon.check-circle
                                                     class="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
-                                                <flux:text size="sm" class="text-slate-900 dark:text-slate-100 truncate flex-grow">
-                                                    {{ is_object($billingFile) ? $billingFile->getClientOriginalName() : 'Billing'
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            }}
+                                                <flux:text size="sm"
+                                                    class="text-slate-900 dark:text-slate-100 truncate flex-grow">
+                                                    {{ is_object($billingFile) ? $billingFile->getClientOriginalName() : 'Billing' }}
                                                 </flux:text>
                                             </div>
                                         @endif
@@ -261,7 +300,8 @@
                             <div class="pt-6 border-t border-gray-200 dark:border-gray-700 space-y-4">
                                 <div class="flex items-center gap-2">
                                     <flux:icon.plus-circle class="w-5 h-5 text-gray-400" />
-                                    <flux:heading size="sm" class="text-gray-600 dark:text-gray-300">Dokumen Tambahan
+                                    <flux:heading size="sm" class="text-gray-600 dark:text-gray-300">Dokumen
+                                        Tambahan
                                         (Opsional)</flux:heading>
                                 </div>
 
@@ -271,7 +311,8 @@
                                         <div class="space-y-3">
                                             <div class="flex items-center gap-2">
                                                 <div class="p-2 bg-slate-100 dark:bg-slate-900/30 rounded-lg">
-                                                    <flux:icon.document-text class="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                                                    <flux:icon.document-text
+                                                        class="w-5 h-5 text-slate-600 dark:text-slate-400" />
                                                 </div>
                                                 <div class="flex-grow">
                                                     <flux:heading size="sm">SEP Rawat Jalan</flux:heading>
@@ -293,16 +334,18 @@
                                                     class="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-800">
                                                     <flux:icon.exclamation-circle
                                                         class="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0" />
-                                                    <flux:text size="sm" class="text-rose-900 dark:text-rose-100">{{ $message }}
+                                                    <flux:text size="sm" class="text-rose-900 dark:text-rose-100">
+                                                        {{ $message }}
                                                     </flux:text>
                                                 </div>
                                             @enderror
-                                            @if($sepRJFile)
+                                            @if ($sepRJFile)
                                                 <div
                                                     class="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-200 dark:border-slate-800">
                                                     <flux:icon.check-circle
                                                         class="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
-                                                    <flux:text size="sm" class="text-slate-900 dark:text-slate-100 truncate flex-grow">
+                                                    <flux:text size="sm"
+                                                        class="text-slate-900 dark:text-slate-100 truncate flex-grow">
                                                         {{ is_object($sepRJFile) ? $sepRJFile->getClientOriginalName() : 'SEP RJ' }}
                                                     </flux:text>
                                                 </div>
@@ -314,7 +357,8 @@
                                     <div class="space-y-3">
                                         <div class="flex items-center gap-2">
                                             <div class="p-2 bg-violet-100 dark:bg-violet-900/30 rounded-lg">
-                                                <flux:icon.document-plus class="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                                                <flux:icon.document-plus
+                                                    class="w-5 h-5 text-violet-600 dark:text-violet-400" />
                                             </div>
                                             <div class="flex-grow">
                                                 <flux:heading size="sm">Dokumen LIP</flux:heading>
@@ -327,7 +371,8 @@
                                         <flux:input type="file" wire:model="fileLIP" accept=".pdf"
                                             label="Upload LIP (Opsional)" />
                                         {{-- Upload indicator --}}
-                                        <div wire:loading wire:target="fileLIP" class="flex items-center gap-2 text-slate-600">
+                                        <div wire:loading wire:target="fileLIP"
+                                            class="flex items-center gap-2 text-slate-600">
                                             <div
                                                 class="animate-spin rounded-full h-4 w-4 border-2 border-slate-600 border-t-transparent">
                                             </div>
@@ -338,16 +383,18 @@
                                                 class="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-800">
                                                 <flux:icon.exclamation-circle
                                                     class="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0" />
-                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">{{ $message }}
+                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">
+                                                    {{ $message }}
                                                 </flux:text>
                                             </div>
                                         @enderror
-                                        @if($fileLIP)
+                                        @if ($fileLIP)
                                             <div
                                                 class="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-200 dark:border-slate-800">
                                                 <flux:icon.check-circle
                                                     class="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
-                                                <flux:text size="sm" class="text-slate-900 dark:text-slate-100 truncate flex-grow">
+                                                <flux:text size="sm"
+                                                    class="text-slate-900 dark:text-slate-100 truncate flex-grow">
                                                     {{ is_object($fileLIP) ? $fileLIP->getClientOriginalName() : 'LIP' }}
                                                 </flux:text>
                                             </div>
@@ -382,18 +429,22 @@
                                                 class="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-800">
                                                 <flux:icon.exclamation-circle
                                                     class="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0" />
-                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">{{ $message }}
+                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">
+                                                    {{ $message }}
                                                 </flux:text>
                                             </div>
                                         @enderror
-                                        @if($labResultFile)
+                                        @if ($labResultFile)
                                             <div
                                                 class="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-200 dark:border-slate-800">
                                                 <flux:icon.check-circle
                                                     class="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
-                                                <flux:text size="sm" class="text-slate-900 dark:text-slate-100 truncate flex-grow">
-                                                    {{ is_object($labResultFile) ? $labResultFile->getClientOriginalName() : 'Hasil
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            Lab' }}
+                                                <flux:text size="sm"
+                                                    class="text-slate-900 dark:text-slate-100 truncate flex-grow">
+                                                    {{ is_object($labResultFile)
+                                                        ? $labResultFile->getClientOriginalName()
+                                                        : 'Hasil
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Lab' }}
                                                 </flux:text>
                                             </div>
                                         @endif
@@ -428,20 +479,21 @@
                                                 class="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-800">
                                                 <flux:icon.exclamation-circle
                                                     class="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0" />
-                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">{{ $message }}
+                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">
+                                                    {{ $message }}
                                                 </flux:text>
                                             </div>
                                         @enderror
-                                        @if($labResultFile2)
-                                                            <div
-                                                                class="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-200 dark:border-slate-800">
-                                                                <flux:icon.check-circle
-                                                                    class="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
-                                                                <flux:text size="sm" class="text-slate-900 dark:text-slate-100 truncate flex-grow">
-                                                                    {{ is_object($labResultFile2) ? $labResultFile2->getClientOriginalName() :
-                                            'Hasil Lab 2' }}
-                                                                </flux:text>
-                                                            </div>
+                                        @if ($labResultFile2)
+                                            <div
+                                                class="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-200 dark:border-slate-800">
+                                                <flux:icon.check-circle
+                                                    class="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+                                                <flux:text size="sm"
+                                                    class="text-slate-900 dark:text-slate-100 truncate flex-grow">
+                                                    {{ is_object($labResultFile2) ? $labResultFile2->getClientOriginalName() : 'Hasil Lab 2' }}
+                                                </flux:text>
+                                            </div>
                                         @endif
                                     </div>
 
@@ -474,20 +526,21 @@
                                                 class="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-800">
                                                 <flux:icon.exclamation-circle
                                                     class="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0" />
-                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">{{ $message }}
+                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">
+                                                    {{ $message }}
                                                 </flux:text>
                                             </div>
                                         @enderror
-                                        @if($labResultFile3)
-                                                            <div
-                                                                class="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-200 dark:border-slate-800">
-                                                                <flux:icon.check-circle
-                                                                    class="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
-                                                                <flux:text size="sm" class="text-slate-900 dark:text-slate-100 truncate flex-grow">
-                                                                    {{ is_object($labResultFile3) ? $labResultFile3->getClientOriginalName() :
-                                            'Hasil Lab 3' }}
-                                                                </flux:text>
-                                                            </div>
+                                        @if ($labResultFile3)
+                                            <div
+                                                class="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-200 dark:border-slate-800">
+                                                <flux:icon.check-circle
+                                                    class="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+                                                <flux:text size="sm"
+                                                    class="text-slate-900 dark:text-slate-100 truncate flex-grow">
+                                                    {{ is_object($labResultFile3) ? $labResultFile3->getClientOriginalName() : 'Hasil Lab 3' }}
+                                                </flux:text>
+                                            </div>
                                         @endif
                                     </div>
 
@@ -520,20 +573,21 @@
                                                 class="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-800">
                                                 <flux:icon.exclamation-circle
                                                     class="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0" />
-                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">{{ $message }}
+                                                <flux:text size="sm" class="text-rose-900 dark:text-rose-100">
+                                                    {{ $message }}
                                                 </flux:text>
                                             </div>
                                         @enderror
-                                        @if($labResultFile4)
-                                                            <div
-                                                                class="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-200 dark:border-slate-800">
-                                                                <flux:icon.check-circle
-                                                                    class="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
-                                                                <flux:text size="sm" class="text-slate-900 dark:text-slate-100 truncate flex-grow">
-                                                                    {{ is_object($labResultFile4) ? $labResultFile4->getClientOriginalName() :
-                                            'Hasil Lab 4' }}
-                                                                </flux:text>
-                                                            </div>
+                                        @if ($labResultFile4)
+                                            <div
+                                                class="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-200 dark:border-slate-800">
+                                                <flux:icon.check-circle
+                                                    class="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+                                                <flux:text size="sm"
+                                                    class="text-slate-900 dark:text-slate-100 truncate flex-grow">
+                                                    {{ is_object($labResultFile4) ? $labResultFile4->getClientOriginalName() : 'Hasil Lab 4' }}
+                                                </flux:text>
+                                            </div>
                                         @endif
                                     </div>
                                 </div>
@@ -551,8 +605,7 @@
                                 Progress Upload Dokumen
                             </flux:heading>
                             <flux:text size="sm" class="font-mono text-slate-700 dark:text-slate-300">
-                                {{ collect($this->uploadProgress)->filter()->count() }} / {{
-                    8 }} File
+                                {{ collect($this->uploadProgress)->filter()->count() }} / {{ 8 }} File
                             </flux:text>
                         </div>
 
@@ -576,11 +629,12 @@
                     </flux:button>
 
                     <div class="flex items-center gap-3">
-                        @if(!$this->canShowSupportingDocuments)
+                        @if (!$this->canShowSupportingDocuments)
                             <div
                                 class="flex items-center gap-2 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-lg">
                                 <flux:icon.exclamation-triangle class="w-5 h-5" />
-                                <flux:text size="sm" class="font-medium">Isi tanggal pulang terlebih dahulu</flux:text>
+                                <flux:text size="sm" class="font-medium">Isi tanggal pulang terlebih dahulu
+                                </flux:text>
                             </div>
                         @elseif(!$resumeFile || !$billingFile)
                             <div
@@ -598,8 +652,8 @@
                             <span wire:loading wire:target="submit" class="inline-flex items-center gap-2">
                                 <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                        stroke-width="4"></circle>
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor"
                                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                     </path>
@@ -613,7 +667,7 @@
         @endif
 
         {{-- Initial SEP Upload Section --}}
-        @if(!$showUploadedData)
+        @if (!$showUploadedData)
 
             <div
                 class="w-lg mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 transform hover:scale-[1.01] transition-transform duration-300 animate-fade-in">
@@ -645,10 +699,12 @@
                                         <flux:icon.arrow-up-tray class="w-5 h-5" />
                                         <span>Pilih File SEP</span>
                                     </div>
-                                    <input id="sepFile" wire:model="sepFile" type="file" class="sr-only" accept=".pdf">
+                                    <input id="sepFile" wire:model="sepFile" type="file" class="sr-only"
+                                        accept=".pdf">
                                 </label>
                             </div>
-                            <div class="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            <div
+                                class="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                                 <flux:icon.information-circle class="w-4 h-4" />
                                 <span>Format: PDF | Maksimal: 2MB</span>
                             </div>
@@ -665,8 +721,10 @@
                                     <flux:icon.exclamation-circle class="w-6 h-6 text-rose-600 dark:text-rose-400" />
                                 </div>
                                 <div class="flex-grow">
-                                    <flux:text class="font-semibold text-rose-900 dark:text-rose-100">Error Upload</flux:text>
-                                    <flux:text size="sm" class="text-rose-700 dark:text-rose-300 mt-1">{{ $message }}
+                                    <flux:text class="font-semibold text-rose-900 dark:text-rose-100">Error Upload
+                                    </flux:text>
+                                    <flux:text size="sm" class="text-rose-700 dark:text-rose-300 mt-1">
+                                        {{ $message }}
                                     </flux:text>
                                 </div>
                             </div>
@@ -674,7 +732,7 @@
                     @enderror
 
                     {{-- File Info Display --}}
-                    @if($sepFile)
+                    @if ($sepFile)
                         <div
                             class="mt-6 p-5 bg-slate-50 dark:bg-slate-900/20 border-2 border-slate-200 dark:border-slate-800 rounded-xl">
                             <div class="flex items-center gap-4">
@@ -683,7 +741,8 @@
                                     <flux:icon.check-circle class="w-7 h-7 text-slate-600 dark:text-slate-400" />
                                 </div>
                                 <div class="flex-grow">
-                                    <flux:text class="font-semibold text-slate-900 dark:text-slate-100">File SEP berhasil
+                                    <flux:text class="font-semibold text-slate-900 dark:text-slate-100">File SEP
+                                        berhasil
                                         diunggah</flux:text>
                                     <flux:text size="sm" class="text-slate-700 dark:text-slate-300 mt-1">
                                         {{ is_object($sepFile) ? $sepFile->getClientOriginalName() : 'SEP File' }}
