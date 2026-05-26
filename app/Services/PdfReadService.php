@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Log;
-use Spatie\PdfToText\Pdf;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use setasign\Fpdi\Fpdi;
+use Spatie\PdfToText\Pdf;
 
 use function Laravel\Prompts\text;
 
@@ -123,11 +123,9 @@ class PdfReadService
         return $data;
     }
 
-
     public function extractPdfAssist(string $text): array
     {
         Log::info('Starting PDF extraction with extractPdfAssist');
-
 
         try {
             // Step 1: Normalize text encoding and whitespace
@@ -147,7 +145,7 @@ class PdfReadService
 
             Log::info('PDF extraction successful', [
                 'sep_number' => $data['sep_number'] ?? 'N/A',
-                'patient_name' => $data['patient_name'] ?? 'N/A'
+                'patient_name' => $data['patient_name'] ?? 'N/A',
             ]);
 
             return $data;
@@ -174,18 +172,17 @@ class PdfReadService
     private function normalizeLabels(string $text): string
     {
         $labels = [
-            '/\bNo\.?\s*SEP\b/i'        => 'No.SEP',
-            '/\bTgl\.?\s*SEP\b/i'       => 'Tgl.SEP',
-            '/\bNo\.?\s*Kartu\b/i'      => 'No.Kartu',
-            '/\bNama\s*Peserta\b/i'     => 'Nama Peserta',
-            '/\bJns\.?\s*Rawat\b/i'     => 'Jns.Rawat',
+            '/\bNo\.?\s*SEP\b/i' => 'No.SEP',
+            '/\bTgl\.?\s*SEP\b/i' => 'Tgl.SEP',
+            '/\bNo\.?\s*Kartu\b/i' => 'No.Kartu',
+            '/\bNama\s*Peserta\b/i' => 'Nama Peserta',
+            '/\bJns\.?\s*Rawat\b/i' => 'Jns.Rawat',
             // '/\bKls\.?\s*Rawat\b/i'     => 'Kls.Rawat',
         ];
 
         foreach ($labels as $pattern => $canonical) {
             $text = preg_replace($pattern, $canonical, $text);
         }
-
 
         return $text;
     }
@@ -194,75 +191,74 @@ class PdfReadService
     {
         $extracted = [];
 
-    // Extract MR from No.Kartu line (format: No.Kartu : 0002138667153 ( 238136 ))
-    $mrPattern = '/No\.Kartu\s*:\s*[0-9]+\s*\(\s*([0-9]+)\s*\)/i';
-    if (preg_match($mrPattern, $text, $mrMatch)) {
-        $extracted['medical_record_number'] = trim($mrMatch[1]);
+        // Extract MR from No.Kartu line (format: No.Kartu : 0002138667153 ( 238136 ))
+        $mrPattern = '/No\.Kartu\s*:\s*[0-9]+\s*\(\s*([0-9]+)\s*\)/i';
+        if (preg_match($mrPattern, $text, $mrMatch)) {
+            $extracted['medical_record_number'] = trim($mrMatch[1]);
+        }
+
+        // Extract sep_date (format: Tgl.SEP : 2026-01-19)
+        if (preg_match('/Tgl\.SEP\s*:\s*([0-9\-]+)/i', $text, $m)) {
+            $extracted['sep_date'] = trim($m[1]);
+        }
+
+        // Extract bpjs_number (format: No.Kartu : 0002138667153)
+        if (preg_match('/No\.Kartu\s*:\s*([0-9]+)/i', $text, $m)) {
+            $extracted['bpjs_number'] = trim($m[1]);
+        }
+
+        // Extract patient_name (format: Nama Peserta : PARSAULIAN SILALAHI)
+        if (preg_match('/Nama\s*Peserta\s*:\s*([^\n]+)/i', $text, $m)) {
+            $extracted['patient_name'] = trim($m[1]);
+        }
+
+        return $extracted;
     }
 
-    // Extract sep_date (format: Tgl.SEP : 2026-01-19)
-    if (preg_match('/Tgl\.SEP\s*:\s*([0-9\-]+)/i', $text, $m)) {
-        $extracted['sep_date'] = trim($m[1]);
+    private function parseFields(string $text): array
+    {
+        $data = [];
+
+        // === FORMAT-BASED EXTRACTION (New resilient approach) ===
+
+        // Jenis Rawatan: Find R.Jalan or R.Inap anywhere in text
+        $data['rawat_text'] = $this->extractJenisRawatanByFormat($text);
+
+        // Kelas Rawatan: Find KELAS 1/2/3 anywhere in text
+        $data['Kls.Rawat'] = $this->extractKelasRawatanByFormat($text);
+
+        // BPJS Number: 13 digits near No.Kartu label
+        $data['bpjs_number'] = $this->extractBpjsNumberNearLabel($text);
+
+        // MR Number: 6 digits in parentheses
+        $data['medical_record_number'] = $this->extractMrNumberByFormat($text);
+
+        // === LABEL-BASED EXTRACTION (Keep working as-is) ===
+
+        // No.SEP: Keep current method (working fine)
+        $data['sep_number'] = $this->extractField('No.SEP', '/No\.SEP\s*:\s*([A-Z0-9\/\.]+)/i', $text);
+
+        // SEP Date: Keep current method (working fine)
+        if (preg_match('/Tgl\.SEP\s*:\s*([0-9\-]+)/i', $text, $m)) {
+            $data['sep_date'] = trim($m[1]);
+        }
+
+        // Patient Name: Keep label-based (no unique format)
+        if (preg_match('/Nama\s*Peserta\s*:\s*([^\n]+)/i', $text, $m)) {
+            $data['patient_name'] = trim($m[1]);
+        }
+
+        return $data;
     }
 
-    // Extract bpjs_number (format: No.Kartu : 0002138667153)
-    if (preg_match('/No\.Kartu\s*:\s*([0-9]+)/i', $text, $m)) {
-        $extracted['bpjs_number'] = trim($m[1]);
+    private function extractField(string $label, string $pattern, string $text): string
+    {
+        if (preg_match($pattern, $text, $m)) {
+            return trim($m[1]);
+        }
+
+        throw new \RuntimeException("Field {$label} tidak ditemukan.");
     }
-
-    // Extract patient_name (format: Nama Peserta : PARSAULIAN SILALAHI)
-    if (preg_match('/Nama\s*Peserta\s*:\s*([^\n]+)/i', $text, $m)) {
-        $extracted['patient_name'] = trim($m[1]);
-    }
-
-    return $extracted;
-}
-
-private function parseFields(string $text): array
-{
-    $data = [];
-
-    // === FORMAT-BASED EXTRACTION (New resilient approach) ===
-
-    // Jenis Rawatan: Find R.Jalan or R.Inap anywhere in text
-    $data['rawat_text'] = $this->extractJenisRawatanByFormat($text);
-
-    // Kelas Rawatan: Find KELAS 1/2/3 anywhere in text
-    $data['Kls.Rawat'] = $this->extractKelasRawatanByFormat($text);
-
-    // BPJS Number: 13 digits near No.Kartu label
-    $data['bpjs_number'] = $this->extractBpjsNumberNearLabel($text);
-
-    // MR Number: 6 digits in parentheses
-    $data['medical_record_number'] = $this->extractMrNumberByFormat($text);
-
-
-    // === LABEL-BASED EXTRACTION (Keep working as-is) ===
-
-    // No.SEP: Keep current method (working fine)
-    $data['sep_number'] = $this->extractField('No.SEP', '/No\.SEP\s*:\s*([A-Z0-9\/\.]+)/i', $text);
-
-    // SEP Date: Keep current method (working fine)
-    if (preg_match('/Tgl\.SEP\s*:\s*([0-9\-]+)/i', $text, $m)) {
-        $data['sep_date'] = trim($m[1]);
-    }
-
-    // Patient Name: Keep label-based (no unique format)
-    if (preg_match('/Nama\s*Peserta\s*:\s*([^\n]+)/i', $text, $m)) {
-        $data['patient_name'] = trim($m[1]);
-    }
-
-    return $data;
-}
-
-private function extractField(string $label, string $pattern, string $text): string
-{
-    if (preg_match($pattern, $text, $m)) {
-        return trim($m[1]);
-    }
-
-    throw new \RuntimeException("Field {$label} tidak ditemukan.");
-}
 
     private function applyDomainRules(array $data): array
     {
@@ -270,8 +266,8 @@ private function extractField(string $label, string $pattern, string $text): str
         if (isset($data['rawat_text'])) {
             $data['jenis_rawatan'] = match (strtoupper($data['rawat_text'])) {
                 'R.JALAN' => 'RJ',
-                'R.INAP'  => 'RI',
-                default   => throw new \RuntimeException('Jenis Rawat tidak valid: ' . $data['rawat_text'])
+                'R.INAP' => 'RI',
+                default => throw new \RuntimeException('Jenis Rawat tidak valid: '.$data['rawat_text'])
             };
             unset($data['rawat_text']);
         }
@@ -283,8 +279,8 @@ private function extractField(string $label, string $pattern, string $text): str
         }
 
         // Validate date
-        if (isset($data['sep_date']) && !strtotime($data['sep_date'])) {
-            throw new \RuntimeException('Tanggal SEP tidak valid: ' . $data['sep_date']);
+        if (isset($data['sep_date']) && ! strtotime($data['sep_date'])) {
+            throw new \RuntimeException('Tanggal SEP tidak valid: '.$data['sep_date']);
         }
 
         return $data;
@@ -296,7 +292,7 @@ private function extractField(string $label, string $pattern, string $text): str
         if (preg_match('/(\d+)/', $classText, $m)) {
             return $m[1];
         }
-        throw new \RuntimeException('Kelas rawat tidak valid: ' . $classText);
+        throw new \RuntimeException('Kelas rawat tidak valid: '.$classText);
     }
 
     private function normalizeLooseValueRow(string $text): string
@@ -307,8 +303,8 @@ private function extractField(string $label, string $pattern, string $text): str
 
         if (preg_match($pattern, $text, $m)) {
             // Append structured fields to text
-            $text .= "\nJns.Rawat : " . trim($m[1]);
-            $text .= "\nKls.Rawat : " . trim($m[2]);
+            $text .= "\nJns.Rawat : ".trim($m[1]);
+            $text .= "\nKls.Rawat : ".trim($m[2]);
         }
 
         return $text;
@@ -321,8 +317,8 @@ private function extractField(string $label, string $pattern, string $text): str
     private function extractJenisRawatanByFormat(string $text): string
     {
         // Search for R.Jalan or R.Inap regardless of line breaks
-        if (preg_match('/\bR\.(?:Jalan|Inap)\b/i', $text, $m)) {
-            return $m[0];
+        if (preg_match('/\bR\.\s*(Jalan|Inap)\b/i', $text, $m)) {
+            return 'R.'.$m[1];
         }
 
         throw new \RuntimeException('Jenis Rawatan (R.Jalan/R.Inap) tidak ditemukan.');
@@ -383,7 +379,7 @@ private function extractField(string $label, string $pattern, string $text): str
      */
     public function ensureSinglePage(TemporaryUploadedFile $file): void
     {
-        $fpdi = new Fpdi();
+        $fpdi = new Fpdi;
         $pageCount = $fpdi->setSourceFile($file->getRealPath());
 
         if ($pageCount !== 1) {

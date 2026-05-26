@@ -127,7 +127,7 @@
                             <div class="flex items-center text-sm">
                                 <flux:icon name="calendar" class="size-4 text-gray-400 dark:text-gray-500 mr-2" />
                                 <span class="text-gray-600 dark:text-gray-400">
-                                    {{ $claim->tanggal_rawatan->translatedFormat('d F Y') }}
+                                    {{ $claim->tanggal_rawatan->translatedFormat('F Y') }}
                                 </span>
                             </div>
                             <div class="flex items-center text-sm">

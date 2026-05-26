@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\BpjsRawatJalanForm;
+use App\Livewire\ClaimForm;
 use App\Models\BpjsClaim;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -16,10 +16,10 @@ beforeEach(function () {
 });
 
 test('user can view bpjs rawat jalan form', function () {
-    $response = $this->get(route('bpjs-rajal-form'));
+    $response = $this->get(route('claim-form'));
 
     $response->assertStatus(200);
-    $response->assertSeeLivewire(BpjsRawatJalanForm::class);
+    $response->assertSeeLivewire(ClaimForm::class);
 });
 
 test('bpjs claim can be filtered by month', function () {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Livewire\BpjsRawatJalanForm;
+use App\Livewire\ClaimForm;
 use App\Models\User;
 use App\Services\GenerateFolderService;
 use App\Services\PdfMergerService;
@@ -31,19 +31,19 @@ it('rejects non-pdf for lab result file', function () {
             'medical_record_number' => 'RM001',
             'patient_name' => 'John Doe',
             'sep_number' => 'SEP123',
-            'bpjs_serial_number' => '1234567890',
+            'bpjs_number' => '1234567890',
             'jenis_rawatan' => 'RJ',
             'sep_date' => '2025-11-10',
         ]);
     });
 
     Livewire::actingAs($user)
-        ->test(BpjsRawatJalanForm::class)
+        ->test(ClaimForm::class)
         ->set('sep_number', 'SEP123')
         ->set('sep_date', '2025-11-10')
         ->set('medical_record_number', 'RM001')
         ->set('patient_name', 'John Doe')
-        ->set('bpjs_serial_number', '1234567890')
+        ->set('bpjs_number', '1234567890')
         ->set('patient_class', '1')
         ->set('sepFile', UploadedFile::fake()->create('sep.pdf', 100))
         ->set('resumeFile', UploadedFile::fake()->create('resume.pdf', 100))
@@ -94,20 +94,20 @@ it('includes lab result in merge order after resume when provided', function () 
                 'medical_record_number' => 'RM001',
                 'patient_name' => 'John Doe',
                 'sep_number' => 'SEP123',
-                'bpjs_serial_number' => '1234567890',
+                'bpjs_number' => '1234567890',
                 'jenis_rawatan' => 'RJ',
                 'sep_date' => '2025-11-10',
             ]);
     });
 
     $component = Livewire::actingAs($user)
-        ->test(BpjsRawatJalanForm::class)
+        ->test(ClaimForm::class)
         // set minimal required fields
         ->set('sep_number', 'SEP123')
         ->set('sep_date', '2025-11-10')
         ->set('medical_record_number', 'RM001')
         ->set('patient_name', 'John Doe')
-        ->set('bpjs_serial_number', '1234567890')
+        ->set('bpjs_number', '1234567890')
         ->set('patient_class', '1')
         // upload required files
         ->set('sepFile', UploadedFile::fake()->create('sep.pdf', 100))
@@ -145,19 +145,19 @@ it('rejects non-pdf for lab result file 2', function () {
             'medical_record_number' => 'RM001',
             'patient_name' => 'John Doe',
             'sep_number' => 'SEP456',
-            'bpjs_serial_number' => '1234567890',
+            'bpjs_number' => '1234567890',
             'jenis_rawatan' => 'RJ',
             'sep_date' => '2025-11-10',
         ]);
     });
 
     Livewire::actingAs($user)
-        ->test(BpjsRawatJalanForm::class)
+        ->test(ClaimForm::class)
         ->set('sep_number', 'SEP456')
         ->set('sep_date', '2025-11-10')
         ->set('medical_record_number', 'RM001')
         ->set('patient_name', 'John Doe')
-        ->set('bpjs_serial_number', '1234567890')
+        ->set('bpjs_number', '1234567890')
         ->set('patient_class', '1')
         ->set('sepFile', UploadedFile::fake()->create('sep.pdf', 100))
         ->set('resumeFile', UploadedFile::fake()->create('resume.pdf', 100))
@@ -192,25 +192,26 @@ it('includes both lab result files in merge order before billing', function () {
     });
 
     $this->mock(PdfReadService::class, function ($mock) {
+        $mock->shouldReceive('ensureSinglePage')->andReturnNull();
         $mock->shouldReceive('getPdfTextwithSpatie')->andReturn('FAKE_PDF_TEXT');
         $mock->shouldReceive('extractPdf')->andReturn([
             'patient_class' => 'Kelas 2',
             'medical_record_number' => 'RM002',
             'patient_name' => 'Jane Doe',
             'sep_number' => 'SEP789',
-            'bpjs_serial_number' => '9876543210',
+            'bpjs_number' => '9876543210',
             'jenis_rawatan' => 'RJ',
             'sep_date' => '2025-11-10',
         ]);
     });
 
     Livewire::actingAs($user)
-        ->test(BpjsRawatJalanForm::class)
+        ->test(ClaimForm::class)
         ->set('sep_number', 'SEP789')
         ->set('sep_date', '2025-11-10')
         ->set('medical_record_number', 'RM002')
         ->set('patient_name', 'Jane Doe')
-        ->set('bpjs_serial_number', '9876543210')
+        ->set('bpjs_number', '9876543210')
         ->set('patient_class', '2')
         ->set('sepFile', UploadedFile::fake()->create('sep.pdf', 100))
         ->set('resumeFile', UploadedFile::fake()->create('resume.pdf', 100))
@@ -224,16 +225,14 @@ it('includes both lab result files in merge order before billing', function () {
 
     // Verify merge order: SEP → Resume → Lab1 → Lab2 → Billing
     expect($calledWithFiles)->not->toBeNull();
-   
+
     expect($calledWithFiles)->toBeArray();
     expect(count($calledWithFiles ?? []))->toBe(7);
-    // Check order: first is sep.pdf, lab files before billing, billing is last
     expect(Str::endsWith($calledWithFiles[0], 'sep.pdf'))->toBeTrue();
-    expect(Str::endsWith($calledWithFiles[1], 'sepRJ.pdf'))->toBeTrue();
-    expect(Str::endsWith($calledWithFiles[2], 'resume.pdf'))->toBeTrue();
-    expect(Str::endsWith($calledWithFiles[3], 'lab1.pdf'))->toBeTrue();
-    expect(Str::endsWith($calledWithFiles[4], 'lab2.pdf'))->toBeTrue();
-    expect(Str::endsWith($calledWithFiles[5], 'lab3.pdf'))->toBeTrue();
-    expect(Str::endsWith($calledWithFiles[6], 'lab4.pdf'))->toBeTrue();
-    expect(Str::endsWith($calledWithFiles[7], 'billing.pdf'))->toBeTrue();
+    expect(Str::endsWith($calledWithFiles[1], 'resume.pdf'))->toBeTrue();
+    expect(Str::endsWith($calledWithFiles[2], 'lab1.pdf'))->toBeTrue();
+    expect(Str::endsWith($calledWithFiles[3], 'lab2.pdf'))->toBeTrue();
+    expect(Str::endsWith($calledWithFiles[4], 'lab3.pdf'))->toBeTrue();
+    expect(Str::endsWith($calledWithFiles[5], 'lab4.pdf'))->toBeTrue();
+    expect(Str::endsWith($calledWithFiles[6], 'billing.pdf'))->toBeTrue();
 });

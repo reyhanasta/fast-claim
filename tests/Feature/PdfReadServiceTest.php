@@ -1,7 +1,6 @@
 <?php
 
 use App\Services\PdfReadService;
-use Tests\TestCase;
 
 beforeEach(function () {
     $this->service = app(PdfReadService::class);
@@ -27,11 +26,11 @@ function makeSepText(array $replacements = []): string
         return $data['raw_text'];
     }
 
-    return "No.SEP : {$data['sep_number']}\n" .
-           "Tgl.SEP : {$data['sep_date']}\n" .
-           "No.Kartu : {$data['bpjs_number']} ( {$data['medical_record_number']} )\n" .
-           "Nama Peserta : {$data['patient_name']}\n" .
-           "Jns.Rawat : {$data['jenis_rawatan']}\n" .
+    return "No.SEP : {$data['sep_number']}\n".
+           "Tgl.SEP : {$data['sep_date']}\n".
+           "No.Kartu : {$data['bpjs_number']} ( {$data['medical_record_number']} )\n".
+           "Nama Peserta : {$data['patient_name']}\n".
+           "Jns.Rawat : {$data['jenis_rawatan']}\n".
            "Kls.Rawat : {$data['patient_class']}";
 }
 
@@ -50,33 +49,33 @@ it('extracts R.Inap correctly with normal format', function () {
 });
 
 it('extracts jenis rawatan with broken line breaks', function () {
-    $text = "No.SEP : 0069S0020126V000295\n" .
-            "Tgl.SEP : 2026-01-19\n" .
-            "No.Kartu : 0002138667153 ( 238136 )\n" .
-            "Nama Peserta : PARSAULIAN SILALAHI\n" .
-            "Jns.Rawat\n:\nR.Jalan\n" .
+    $text = "No.SEP : 0069S0020126V000295\n".
+            "Tgl.SEP : 2026-01-19\n".
+            "No.Kartu : 0002138667153 ( 238136 )\n".
+            "Nama Peserta : PARSAULIAN SILALAHI\n".
+            "Jns.Rawat\n:\nR.Jalan\n".
             "Kls.Rawat\n:\nKELAS 1";
     $result = $this->service->extractPdfAssist($text);
     expect($result['jenis_rawatan'])->toBe('RJ');
 });
 
 it('extracts jenis rawatan from multi-column layout', function () {
-    $text = "No.SEP : 0069S0020126V000295\n" .
-            "Tgl.SEP : 2026-01-19\n" .
-            "No.Kartu : 0002138667153 ( 238136 )\n" .
-            "Nama Peserta : PARSAULIAN SILALAHI\n" .
+    $text = "No.SEP : 0069S0020126V000295\n".
+            "Tgl.SEP : 2026-01-19\n".
+            "No.Kartu : 0002138667153 ( 238136 )\n".
+            "Nama Peserta : PARSAULIAN SILALAHI\n".
             "Jns.Rawat Jns.Kunjungan Kls.Hak Kls.Rawat Penjamin\n: R.Jalan :: KELAS 1 ::";
     $result = $this->service->extractPdfAssist($text);
     expect($result['jenis_rawatan'])->toBe('RJ');
 });
 
 it('extracts jenis rawatan from bottom of text', function () {
-    $text = "No.SEP : 0069S0020126V000295\n" .
-            "Tgl.SEP : 2026-01-19\n" .
-            "No.Kartu : 0002138667153 ( 238136 )\n" .
-            "Nama Peserta : PARSAULIAN SILALAHI\n" .
-            "R.Inap\n" .
-            "KELAS 2";
+    $text = "No.SEP : 0069S0020126V000295\n".
+            "Tgl.SEP : 2026-01-19\n".
+            "No.Kartu : 0002138667153 ( 238136 )\n".
+            "Nama Peserta : PARSAULIAN SILALAHI\n".
+            "R.Inap\n".
+            'KELAS 2';
     $result = $this->service->extractPdfAssist($text);
     expect($result['jenis_rawatan'])->toBe('RI');
 });
@@ -97,33 +96,33 @@ it('extracts KELAS 1 correctly', function () {
 });
 
 it('extracts KELAS 2 with broken lines', function () {
-    $text = "No.SEP : 0069S0020126V000295\n" .
-            "Tgl.SEP : 2026-01-19\n" .
-            "No.Kartu : 0002138667153 ( 238136 )\n" .
-            "Nama Peserta : PARSAULIAN SILALAHI\n" .
-            "Kls.Rawat\n:\nKELAS 2\n" .
+    $text = "No.SEP : 0069S0020126V000295\n".
+            "Tgl.SEP : 2026-01-19\n".
+            "No.Kartu : 0002138667153 ( 238136 )\n".
+            "Nama Peserta : PARSAULIAN SILALAHI\n".
+            "Kls.Rawat\n:\nKELAS 2\n".
             "Jns.Rawat\n:\nR.Inap";
     $result = $this->service->extractPdfAssist($text);
     expect($result['patient_class'])->toBe('2');
 });
 
 it('extracts kelas from multi-column layout', function () {
-    $text = "No.SEP : 0069S0020126V000295\n" .
-            "Tgl.SEP : 2026-01-19\n" .
-            "No.Kartu : 0002138667153 ( 238136 )\n" .
-            "Nama Peserta : PARSAULIAN SILALAHI\n" .
+    $text = "No.SEP : 0069S0020126V000295\n".
+            "Tgl.SEP : 2026-01-19\n".
+            "No.Kartu : 0002138667153 ( 238136 )\n".
+            "Nama Peserta : PARSAULIAN SILALAHI\n".
             "Jns.Rawat Jns.Kunjungan Kls.Hak Kls.Rawat Penjamin\n: R.Inap :: KELAS 3 ::";
     $result = $this->service->extractPdfAssist($text);
     expect($result['patient_class'])->toBe('3');
 });
 
 it('extracts kelas from bottom of text', function () {
-    $text = "No.SEP : 0069S0020126V000295\n" .
-            "Tgl.SEP : 2026-01-19\n" .
-            "No.Kartu : 0002138667153 ( 238136 )\n" .
-            "Nama Peserta : PARSAULIAN SILALAHI\n" .
-            "R.Jalan\n" .
-            "KELAS 1";
+    $text = "No.SEP : 0069S0020126V000295\n".
+            "Tgl.SEP : 2026-01-19\n".
+            "No.Kartu : 0002138667153 ( 238136 )\n".
+            "Nama Peserta : PARSAULIAN SILALAHI\n".
+            "R.Jalan\n".
+            'KELAS 1';
     $result = $this->service->extractPdfAssist($text);
     expect($result['patient_class'])->toBe('1');
 });
@@ -140,7 +139,7 @@ it('throws exception when kelas rawatan not found', function () {
 it('extracts BPJS number and MR from No.Kartu line', function () {
     $text = makeSepText([
         'bpjs_number' => '0002138667153',
-        'medical_record_number' => '238136'
+        'medical_record_number' => '238136',
     ]);
     $result = $this->service->extractPdfAssist($text);
     expect($result['bpjs_number'])->toBe('0002138667153');
@@ -148,47 +147,47 @@ it('extracts BPJS number and MR from No.Kartu line', function () {
 });
 
 it('extracts BPJS number and MR with different spacing', function () {
-    $text = "No.SEP : 0069S0020126V000295\n" .
-            "Tgl.SEP : 2026-01-19\n" .
-            "Nama Peserta : PARSAULIAN SILALAHI\n" .
-            "Jns.Rawat : R.Jalan\n" .
-            "Kls.Rawat : KELAS 1\n" .
-            "No.Kartu: 0002138667153(238136)";
+    $text = "No.SEP : 0069S0020126V000295\n".
+            "Tgl.SEP : 2026-01-19\n".
+            "Nama Peserta : PARSAULIAN SILALAHI\n".
+            "Jns.Rawat : R.Jalan\n".
+            "Kls.Rawat : KELAS 1\n".
+            'No.Kartu: 0002138667153(238136)';
     $result = $this->service->extractPdfAssist($text);
     expect($result['bpjs_number'])->toBe('0002138667153');
     expect($result['medical_record_number'])->toBe('238136');
 });
 
 it('extracts MR number with broken lines', function () {
-    $text = "No.SEP : 0069S0020126V000295\n" .
-            "Tgl.SEP : 2026-01-19\n" .
-            "Nama Peserta : PARSAULIAN SILALAHI\n" .
-            "Jns.Rawat : R.Jalan\n" .
-            "Kls.Rawat : KELAS 1\n" .
+    $text = "No.SEP : 0069S0020126V000295\n".
+            "Tgl.SEP : 2026-01-19\n".
+            "Nama Peserta : PARSAULIAN SILALAHI\n".
+            "Jns.Rawat : R.Jalan\n".
+            "Kls.Rawat : KELAS 1\n".
             "No.Kartu\n:\n0002138667153\n(\n238136\n)";
     $result = $this->service->extractPdfAssist($text);
     expect($result['medical_record_number'])->toBe('238136');
 });
 
 it('throws exception when BPJS number not found near No.Kartu', function () {
-    $text = "No.SEP : 0069S0020126V000295\n" .
-            "Tgl.SEP : 2026-01-19\n" .
-            "Nama Peserta : PARSAULIAN SILALAHI\n" .
-            "Jns.Rawat : R.Jalan\n" .
-            "Kls.Rawat : KELAS 1\n" .
-            "No.Kartu : \nSome random text with 1234567890123 but not near No.Kartu";
+    $text = "No.SEP : 0069S0020126V000295\n".
+            "Tgl.SEP : 2026-01-19\n".
+            "Nama Peserta : PARSAULIAN SILALAHI\n".
+            "Jns.Rawat : R.Jalan\n".
+            "Kls.Rawat : KELAS 1\n".
+            "No.Kartu : (238136)\n".str_repeat('a', 200).'1234567890123';
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessage('No. Kartu BPJS (13 digit) tidak ditemukan dekat label No.Kartu.');
     $this->service->extractPdfAssist($text);
 });
 
 it('throws exception when MR number not found in parentheses', function () {
-    $text = "No.SEP : 0069S0020126V000295\n" .
-            "Tgl.SEP : 2026-01-19\n" .
-            "Nama Peserta : PARSAULIAN SILALAHI\n" .
-            "Jns.Rawat : R.Jalan\n" .
-            "Kls.Rawat : KELAS 1\n" .
-            "No.Kartu : 0002138667153 ( )";
+    $text = "No.SEP : 0069S0020126V000295\n".
+            "Tgl.SEP : 2026-01-19\n".
+            "Nama Peserta : PARSAULIAN SILALAHI\n".
+            "Jns.Rawat : R.Jalan\n".
+            "Kls.Rawat : KELAS 1\n".
+            'No.Kartu : 0002138667153 ( )';
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessage('No. RM (6 digit dalam kurung) tidak ditemukan.');
     $this->service->extractPdfAssist($text);
@@ -197,7 +196,7 @@ it('throws exception when MR number not found in parentheses', function () {
 // === Full SEP Text Tests ===
 
 it('extracts all fields from complete SEP text', function () {
-    $text = <<<TEXT
+    $text = <<<'TEXT'
 Surat Eligibilitas Peserta
 
 No.SEP
@@ -227,7 +226,7 @@ TEXT;
 });
 
 it('handles SEP text with different formats', function () {
-    $text = <<<TEXT
+    $text = <<<'TEXT'
 Surat Eligibilitas Peserta
 
 No.SEP: 0069S0020126V000295
@@ -251,7 +250,7 @@ TEXT;
 });
 
 it('handles SEP text with values at bottom', function () {
-    $text = <<<TEXT
+    $text = <<<'TEXT'
 Surat Eligibilitas Peserta
 
 No.SEP
@@ -279,7 +278,7 @@ TEXT;
 
 it('handles mixed case in jenis rawatan', function () {
     $text = makeSepText([
-        'jenis_rawatan' => 'r.jalan'
+        'jenis_rawatan' => 'r.jalan',
     ]);
     $result = $this->service->extractPdfAssist($text);
     expect($result['jenis_rawatan'])->toBe('RJ');
@@ -287,7 +286,7 @@ it('handles mixed case in jenis rawatan', function () {
 
 it('handles spaces around jenis rawatan', function () {
     $text = makeSepText([
-        'jenis_rawatan' => 'R.  Inap  '
+        'jenis_rawatan' => 'R.  Inap  ',
     ]);
     $result = $this->service->extractPdfAssist($text);
     expect($result['jenis_rawatan'])->toBe('RI');
@@ -295,7 +294,7 @@ it('handles spaces around jenis rawatan', function () {
 
 it('handles kelas with different spacing', function () {
     $text = makeSepText([
-        'patient_class' => 'KELAS  1'
+        'patient_class' => 'KELAS  1',
     ]);
     $result = $this->service->extractPdfAssist($text);
     expect($result['patient_class'])->toBe('1');

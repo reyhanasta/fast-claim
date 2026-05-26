@@ -60,7 +60,7 @@ class ClaimFormManual extends Component
     public ?TemporaryUploadedFile $fileLIP = null;
 
     // Patient data
-    
+
     #[Validate('required|string|max:100')]
     public string $patient_name = '';
 
@@ -69,8 +69,6 @@ class ClaimFormManual extends Component
 
     #[Validate('required|date')]
     public ?string $sep_date = null;
-
-    public string $selected_day = '';
 
     public string $selected_month = '';
 
@@ -151,7 +149,6 @@ class ClaimFormManual extends Component
 
     public function mount(): void
     {
-        $this->selected_day = date('d');
         $this->selected_month = date('m');
         $this->selected_year = date('Y');
         $this->updateSepDate();
@@ -159,21 +156,15 @@ class ClaimFormManual extends Component
 
     public function updateSepDate(): void
     {
-        if ($this->selected_day && $this->selected_month && $this->selected_year) {
+        if ($this->selected_month && $this->selected_year) {
             $this->sep_date = sprintf(
-                '%04d-%02d-%02d',
+                '%04d-%02d-01',
                 (int) $this->selected_year,
-                (int) $this->selected_month,
-                (int) $this->selected_day
+                (int) $this->selected_month
             );
         } else {
             $this->sep_date = null;
         }
-    }
-
-    public function updatedSelectedDay(): void
-    {
-        $this->updateSepDate();
     }
 
     public function updatedSelectedMonth(): void

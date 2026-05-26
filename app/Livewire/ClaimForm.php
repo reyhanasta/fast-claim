@@ -49,9 +49,11 @@ class ClaimForm extends Component
     // Lab result (optional, PDF only) – merged into final combined PDF
     #[Validate('nullable|file|mimes:pdf|max:2048')]
     public ?TemporaryUploadedFile $labResultFile2 = null;
+
     // Lab result (optional, PDF only) – merged into final combined PDF
     #[Validate('nullable|file|mimes:pdf|max:2048')]
     public ?TemporaryUploadedFile $labResultFile3 = null;
+
     // Lab result (optional, PDF only) – merged into final combined PDF
     #[Validate('nullable|file|mimes:pdf|max:2048')]
     public ?TemporaryUploadedFile $labResultFile4 = null;
@@ -75,7 +77,7 @@ class ClaimForm extends Component
     #[Validate('required|date')]
     public ?string $sep_date = null;
 
-    #[Validate('required|string|in:1,2,3', message: 'Kelas rawatan harus berupa 1, 2, atau 3')]
+    #[Validate('required|string|in:1,2,3')]
     public string $patient_class = '';
 
     #[Locked]
@@ -146,6 +148,7 @@ class ClaimForm extends Component
             'sep_date.required' => 'Tanggal SEP wajib diisi',
             'sep_date.date' => 'Tanggal SEP harus berupa format tanggal yang valid',
             'patient_name.required' => 'Nama pasien wajib diisi',
+            'patient_class.in' => '1, 2, atau 3',
         ];
     }
 
@@ -183,7 +186,6 @@ class ClaimForm extends Component
             'labResultFile4' => $this->labResultFile4 !== null,
         ];
     }
-    
 
     /**
      * Check if supporting documents form can be displayed.
@@ -261,10 +263,12 @@ class ClaimForm extends Component
     {
         $this->processOptionalFile($this->labResultFile2, self::FILE_LAB_RESULT_2);
     }
+
     public function updatedLabResultFile3(): void
     {
         $this->processOptionalFile($this->labResultFile3, self::FILE_LAB_RESULT_3);
     }
+
     public function updatedLabResultFile4(): void
     {
         $this->processOptionalFile($this->labResultFile4, self::FILE_LAB_RESULT_4);
@@ -316,8 +320,7 @@ class ClaimForm extends Component
             // Get ordered files for merging
             $orderedFiles = $this->getOrderedFilesForMerge();
 
-            Log::info('Order Files',$orderedFiles);
-           
+            Log::info('Order Files', $orderedFiles);
 
             if (empty($orderedFiles)) {
                 throw new \RuntimeException('Tidak ada file yang dapat digabungkan');
@@ -433,7 +436,7 @@ class ClaimForm extends Component
         $pdfText = $pdfReadService->getPdfTextwithSpatie($this->sepFile);
         $extractedData = $pdfReadService->extractPdf($pdfText);
 
-        if (! $extractedData) {            
+        if (! $extractedData) {
             throw new \RuntimeException('Format dokumen SEP tidak valid atau tidak dapat dibaca');
         }
 
@@ -534,7 +537,7 @@ class ClaimForm extends Component
             'no_kartu_bpjs' => $this->bpjs_number,
             'no_sep' => $this->sep_number,
             'jenis_rawatan' => $this->jenis_rawatan,
-            'tanggal_rawatan' => $this->sep_date,
+            'tanggal_rawatan' => \Carbon\Carbon::parse($this->sep_date)->startOfMonth()->format('Y-m-d'),
             'nama_pasien' => $this->patient_name,
             'kelas_rawatan' => $this->patient_class,
             'file_path' => $finalPath,

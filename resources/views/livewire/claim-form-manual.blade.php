@@ -11,7 +11,7 @@
     <div class="max-w-4xl mx-auto">
         {{-- Header Section --}}
         {{-- Main Form After SEP Upload --}}
-        @if (!$showUploadedData)
+        @if ($showUploadedData)
             <form wire:submit.prevent="submit" class="space-y-6 animate-fade-in">
                 {{-- PDF Preview Section --}}
                 <div
@@ -55,7 +55,7 @@
 
                     <div class="p-6">
                         {{-- Claim Details Form --}}
-                        <div class="grid grid-cols-3 md:grid-cols-3 gap-4 border-gray-200 dark:border-gray-700">
+                        <div class="grid grid-cols-2  gap-4 border-gray-200 dark:border-gray-700">
                             {{-- Patient Name --}}
                             <flux:field>
                                 <flux:label class="flex items-center gap-2">
@@ -80,39 +80,17 @@
                                     <flux:error>{{ $message }}</flux:error>
                                 @enderror
                             </flux:field>
-                            <flux:field>
-                                <flux:label class="flex items-center gap-2">
-                                    <flux:icon.building-office-2 class="w-4 h-4" />
-                                    Jenis Rawatan
-                                    <flux:text size="sm" class="text-rose-600 dark:text-rose-400">*</flux:text>
-                                </flux:label>
-                                <flux:select wire:model="jenis_rawatan">
-                                    <flux:select.option value="RJ">Rawat Jalan</flux:select.option>
-                                    <flux:select.option value="RI">Rawat Inap</flux:select.option>
-                                </flux:select>
-                                @error('jenis_rawatan')
-                                    <flux:error>{{ $message }}</flux:error>
-                                @enderror
-                            </flux:field>
+
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
-
-
-                            <flux:field>
+                        <div class="grid grid-cols-5 gap-4 pt-4">
+                            <flux:field class="flex-row col-span-3">
                                 <flux:label class="flex items-center gap-2 mb-1">
                                     <flux:icon.calendar class="w-4 h-4" />
                                     {{ $sep_date_label }}
                                     <flux:text size="sm" class="text-rose-600 dark:text-rose-400">*</flux:text>
                                 </flux:label>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <flux:select wire:model.live="selected_day" placeholder="Hari">
-                                        @foreach (range(1, 31) as $day)
-                                            @php $formattedDay = sprintf('%02d', $day); @endphp
-                                            <flux:select.option value="{{ $formattedDay }}">{{ $formattedDay }}
-                                            </flux:select.option>
-                                        @endforeach
-                                    </flux:select>
+                                <div class="grid grid-cols-2 gap-2">
                                     <flux:select wire:model.live="selected_month" placeholder="Bulan">
                                         <flux:select.option value="01">Januari</flux:select.option>
                                         <flux:select.option value="02">Februari</flux:select.option>
@@ -138,8 +116,7 @@
                                     <flux:error class="mt-1">{{ $message }}</flux:error>
                                 @enderror
                             </flux:field>
-
-                            <flux:field>
+                            <flux:field class="flex-row col-span-1">
                                 <flux:label class="flex items-center gap-2">
                                     <flux:icon.shield-check class="w-4 h-4" />
                                     Kelas Pasien
@@ -150,8 +127,20 @@
                                     <flux:error>{{ $message }}</flux:error>
                                 @enderror
                             </flux:field>
-
-
+                            <flux:field class="flex-row col-span-1">
+                                <flux:label class="flex items-center gap-2">
+                                    <flux:icon.building-office-2 class="w-4 h-4" />
+                                    Jenis Rawatan
+                                    <flux:text size="sm" class="text-rose-600 dark:text-rose-400">*</flux:text>
+                                </flux:label>
+                                <flux:select wire:model="jenis_rawatan">
+                                    <flux:select.option value="RJ">Rawat Jalan</flux:select.option>
+                                    <flux:select.option value="RI">Rawat Inap</flux:select.option>
+                                </flux:select>
+                                @error('jenis_rawatan')
+                                    <flux:error>{{ $message }}</flux:error>
+                                @enderror
+                            </flux:field>
                         </div>
                     </div>
                 </div>
@@ -241,7 +230,7 @@
                                                     {{ is_object($resumeFile)
                                                         ? $resumeFile->getClientOriginalName()
                                                         : 'Resume
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Medis' }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Medis' }}
                                                 </flux:text>
                                             </div>
                                         @endif
@@ -444,7 +433,7 @@
                                                     {{ is_object($labResultFile)
                                                         ? $labResultFile->getClientOriginalName()
                                                         : 'Hasil
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Lab' }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Lab' }}
                                                 </flux:text>
                                             </div>
                                         @endif

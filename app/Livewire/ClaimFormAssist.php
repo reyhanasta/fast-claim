@@ -49,9 +49,11 @@ class ClaimFormAssist extends Component
     // Lab result (optional, PDF only) – merged into final combined PDF
     #[Validate('nullable|file|mimes:pdf|max:2048')]
     public ?TemporaryUploadedFile $labResultFile2 = null;
+
     // Lab result (optional, PDF only) – merged into final combined PDF
     #[Validate('nullable|file|mimes:pdf|max:2048')]
     public ?TemporaryUploadedFile $labResultFile3 = null;
+
     // Lab result (optional, PDF only) – merged into final combined PDF
     #[Validate('nullable|file|mimes:pdf|max:2048')]
     public ?TemporaryUploadedFile $labResultFile4 = null;
@@ -183,7 +185,6 @@ class ClaimFormAssist extends Component
             'labResultFile4' => $this->labResultFile4 !== null,
         ];
     }
-    
 
     /**
      * Check if supporting documents form can be displayed.
@@ -261,10 +262,12 @@ class ClaimFormAssist extends Component
     {
         $this->processOptionalFile($this->labResultFile2, self::FILE_LAB_RESULT_2);
     }
+
     public function updatedLabResultFile3(): void
     {
         $this->processOptionalFile($this->labResultFile3, self::FILE_LAB_RESULT_3);
     }
+
     public function updatedLabResultFile4(): void
     {
         $this->processOptionalFile($this->labResultFile4, self::FILE_LAB_RESULT_4);
@@ -316,8 +319,7 @@ class ClaimFormAssist extends Component
             // Get ordered files for merging
             $orderedFiles = $this->getOrderedFilesForMerge();
 
-            Log::info('Order Files',$orderedFiles);
-           
+            Log::info('Order Files', $orderedFiles);
 
             if (empty($orderedFiles)) {
                 throw new \RuntimeException('Tidak ada file yang dapat digabungkan');
@@ -433,7 +435,7 @@ class ClaimFormAssist extends Component
         $pdfText = $pdfReadService->getPdfTextwithSpatie($this->sepFile);
         $extractedData = $pdfReadService->extractPdfAssist($pdfText);
 
-        if (! $extractedData) {            
+        if (! $extractedData) {
             throw new \RuntimeException('Format dokumen SEP tidak valid atau tidak dapat dibaca');
         }
 
@@ -534,7 +536,7 @@ class ClaimFormAssist extends Component
             'no_kartu_bpjs' => $this->bpjs_number,
             'no_sep' => $this->sep_number,
             'jenis_rawatan' => $this->jenis_rawatan,
-            'tanggal_rawatan' => $this->sep_date,
+            'tanggal_rawatan' => \Carbon\Carbon::parse($this->sep_date)->startOfMonth()->format('Y-m-d'),
             'nama_pasien' => $this->patient_name,
             'kelas_rawatan' => $this->patient_class,
             'file_path' => $finalPath,
