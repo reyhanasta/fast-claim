@@ -133,7 +133,7 @@
                                     Jenis Rawatan
                                     <flux:text size="sm" class="text-rose-600 dark:text-rose-400">*</flux:text>
                                 </flux:label>
-                                <flux:select wire:model="jenis_rawatan">
+                                <flux:select wire:model.live="jenis_rawatan">
                                     <flux:select.option value="RJ">Rawat Jalan</flux:select.option>
                                     <flux:select.option value="RI">Rawat Inap</flux:select.option>
                                 </flux:select>
