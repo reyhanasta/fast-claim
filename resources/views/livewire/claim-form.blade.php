@@ -12,6 +12,7 @@
         {{-- Header Section --}}
         {{-- Main Form After SEP Upload --}}
         @if($showUploadedData)
+
             <form wire:submit.prevent="submit" class="space-y-6 animate-fade-in">
                 {{-- PDF Preview Section --}}
                 <div
@@ -238,7 +239,7 @@
                                                 <flux:text size="sm"
                                                     class="text-emerald-900 dark:text-emerald-100 truncate flex-grow">
                                                     {{ is_object($resumeFile) ? $resumeFile->getClientOriginalName() : 'Resume
-                                                                                                                                                                                                                                                                                        Medis' }}
+                                                                                                                                                                                                                                                                                                    Medis' }}
                                                 </flux:text>
                                             </div>
                                         @endif
@@ -284,7 +285,7 @@
                                                 <flux:text size="sm"
                                                     class="text-emerald-900 dark:text-emerald-100 truncate flex-grow">
                                                     {{ is_object($billingFile) ? $billingFile->getClientOriginalName() : 'Billing'
-                                                                                                                                                                                                                                                                                        }}
+                                                                                                                                                                                                                                                                                                    }}
                                                 </flux:text>
                                             </div>
                                         @endif
@@ -433,7 +434,7 @@
                                                 <flux:text size="sm"
                                                     class="text-emerald-900 dark:text-emerald-100 truncate flex-grow">
                                                     {{ is_object($labResultFile) ? $labResultFile->getClientOriginalName() : 'Hasil
-                                                                                                                                                                                                                                                                                        Lab' }}
+                                                                                                                                                                                                                                                                                                    Lab' }}
                                                 </flux:text>
                                             </div>
                                         @endif
