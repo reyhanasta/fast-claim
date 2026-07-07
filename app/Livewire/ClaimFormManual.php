@@ -92,9 +92,7 @@ class ClaimFormManual extends Component
     public bool $showUploadedData = false;
 
     // Constants
-    private const MAX_FILE_SIZE = 300; // KB
-
-    private const TEMP_STORAGE_PATH = 'temp';
+    private const MAX_FILE_SIZE = 5000; // KB
 
     // File key identifiers
     private const FILE_SEP = 'sepFile';
