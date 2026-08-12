@@ -520,6 +520,7 @@ class ClaimForm extends Component
             $this->temporaryPaths[self::FILE_LAB_RESULT_3] ?? null,
             $this->temporaryPaths[self::FILE_LAB_RESULT_4] ?? null,
             $this->temporaryPaths[self::FILE_BILLING] ?? null,
+            $this->temporaryPaths[self::FILE_LIP] ?? null,
         ])->filter()->values()->all();
     }
 

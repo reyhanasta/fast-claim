@@ -25,7 +25,7 @@ class GenerateFolderService
 
         // Sanitasi sep_number agar tidak menyebabkan error path
         $safeSepNumber = preg_replace('/[^A-Za-z0-9_\-]/', '_', $sep_number);
-
+        
         return sprintf('%s/%s REGULER %s/%s/%s/',
             $year, $month, $year, $jenisRawatan, $safeSepNumber
         );
