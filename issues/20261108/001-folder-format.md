@@ -1,8 +1,9 @@
 perubahan format fastclaim dari
 dari:
 
-- .../NO_SEP/nama_pasien.pdf dan lip.pdf
+- ...R.INAP/NO_SEP/nama_pasien.pdf dan lip.pdf
   menjadi:
-- .../no_sep.pdf (gabungan nama_pasien.pdf dan lip.pdf)
+- ...R.INAP/no_sep.pdf (gabungan nama_pasien.pdf dan lip.pdf)
   EXAMPLE :
-- ...\07_JULI REGULER 2026\BERKAS JULI 2026\R.INAP
+  ...\FAST CLAIM\07_JULI REGULER 2026\R.INAP\0069S002JHKKAS.pdf
+  ...\FAST CLAIM\07_JULI REGULER 2026\R.JALAN\0069S002XKJGS.pdf

@@ -15,7 +15,7 @@
 ### 🗂️ File Management
 
 -   **Structured Organization**: Automatically organizes files into a consistent directory structure based on year, month/period, care type (Outpatient/Inpatient), and dates.
-    -   Example: `2025/12_DESEMBER/R.JALAN/01/SEP_NUMBER/PATIENT_NAME.pdf`
+    -   Example: `2025/12_DESEMBER REGULER 2025/R.JALAN/0069S0020125V000001.pdf`
 -   **Automated Backup**: Uses Laravel Queues to automatically backup files to a secondary location (e.g., network drive, NAS) in the background without blocking the user interface.
 
 ### 📊 Dashboard & Analytics

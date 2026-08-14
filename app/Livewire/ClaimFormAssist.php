@@ -14,8 +14,6 @@ use App\Services\SepDataProcessor;
 use App\Traits\HasAlerts;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -308,13 +306,12 @@ class ClaimFormAssist extends Component
             // Generate output path
             $outputDir = $generateFolderService->generateOutputPath(
                 $this->sep_date,
-                $this->sep_number,
                 $this->jenis_rawatan
             );
 
             // Prepare merged PDF path
-            $patientNameSafe = $this->sanitizePatientName();
-            $pdfOutputPath = $outputDir.$patientNameSafe.'.pdf';
+            $safeSepNumber = preg_replace('/[^A-Za-z0-9_\-]/', '_', $this->sep_number);
+            $pdfOutputPath = $outputDir.$safeSepNumber.'.pdf';
 
             // Get ordered files for merging
             $orderedFiles = $this->getOrderedFilesForMerge();
@@ -331,14 +328,11 @@ class ClaimFormAssist extends Component
             // Create claim record with file path
             $claim = $this->createClaimRecord($finalPath);
 
-            // Handle optional LIP file
-            $lipPath = $this->handleLipFile($claim, $outputDir);
-
             DB::commit();
 
             // Cleanup and dispatch backup job with claim ID for tracking
             $this->cleanUpAfterSubmit($pdfMergeService);
-            BackupFileJob::dispatch($finalPath, $lipPath, $claim->id);
+            BackupFileJob::dispatch($finalPath, null, $claim->id);
 
             $this->showSuccessAlert('Klaim berhasil dibuat!', 'Dokumen telah digabung dan disimpan');
 
@@ -493,20 +487,8 @@ class ClaimFormAssist extends Component
     // ========================================
 
     /**
-     * Sanitize patient name for safe filename usage.
-     */
-    private function sanitizePatientName(): string
-    {
-        return Str::of($this->patient_name)
-            ->upper()
-            ->ascii()
-            ->replaceMatches('/[^A-Z0-9_\-]/', '_')
-            ->toString();
-    }
-
-    /**
      * Get ordered file paths for PDF merging.
-     * Order: SEP → SEP RJ → Resume → Lab Results → Billing
+     * Order: SEP → SEP RJ → Resume → Lab Results → Billing → LIP
      */
     private function getOrderedFilesForMerge(): array
     {
@@ -519,6 +501,7 @@ class ClaimFormAssist extends Component
             $this->temporaryPaths[self::FILE_LAB_RESULT_3] ?? null,
             $this->temporaryPaths[self::FILE_LAB_RESULT_4] ?? null,
             $this->temporaryPaths[self::FILE_BILLING] ?? null,
+            $this->temporaryPaths[self::FILE_LIP] ?? null,
         ])->filter()->values()->all();
     }
 
@@ -541,26 +524,6 @@ class ClaimFormAssist extends Component
             'kelas_rawatan' => $this->patient_class,
             'file_path' => $finalPath,
         ]);
-    }
-
-    /**
-     * Handle optional LIP file upload and storage.
-     */
-    private function handleLipFile(BpjsClaim $claim, string $outputDir): ?string
-    {
-        if (! $this->fileLIP) {
-            return null;
-        }
-
-        $lipFilename = 'LIP.pdf';
-        $lipPath = $outputDir.$lipFilename;
-
-        Storage::disk('shared')->putFileAs($outputDir, $this->fileLIP, $lipFilename);
-        $claim->update(['lip_file_path' => $lipPath]);
-
-        Log::info('LIP file saved', compact('lipPath'));
-
-        return $lipPath;
     }
 
     // ========================================

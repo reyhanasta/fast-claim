@@ -53,7 +53,7 @@ Upload file SEP, dan aplikasi secara otomatis mengekstrak data penting seperti:
 Teknologi OCR berbasis Poppler Utils membaca teks dari PDF dan mengisi form secara otomatis.
 
 #### **2. One-Click PDF Merge**
-Semua dokumen (SEP, Resume Medis, Billing, Lab) otomatis digabung menjadi **satu file PDF** dengan nama yang sesuai nama pasien. Tidak perlu lagi buka Adobe Acrobat atau tool merge manual.
+Semua dokumen (SEP, Resume Medis, Billing, Lab, LIP) otomatis digabung menjadi **satu file PDF** dengan nama sesuai nomor SEP. Tidak perlu lagi buka Adobe Acrobat atau tool merge manual.
 
 #### **3. Structured File Organization**
 Setiap file otomatis disimpan dengan struktur folder yang konsisten:
@@ -61,13 +61,9 @@ Setiap file otomatis disimpan dengan struktur folder yang konsisten:
 2025/
 └── 12_DESEMBER REGULER 2025/
     ├── R.JALAN/
-    │   └── 01/
-    │       └── 0069S0020125V000001/
-    │           ├── NAMA_PASIEN.pdf (gabungan semua dokumen)
-    │           └── LIP.pdf (terpisah karena sifatnya khusus)
+    │   └── 0069S0020125V000001.pdf (gabungan semua dokumen + LIP)
     └── R.INAP/
-        └── 15/
-            └── ...
+        └── ...
 ```
 Format ini mengikuti standar penamaan BPJS dan mudah untuk audit.
 
@@ -285,7 +281,7 @@ Kami menyediakan file PDF dummy yang dapat digunakan untuk mencoba aplikasi tanp
 | `SEP-DUMMY.pdf`        | File SEP dengan data yang dapat diekstrak    |
 | `RESUME-DUMMY.pdf`     | Resume Medis pasien                          |
 | `BILLING-DUMMY.pdf`    | Billing/rincian biaya                        |
-| `LIP-DUMMY.pdf`        | Lembar Informasi Pasien                      |
+| `LIP-DUMMY.pdf`        | Lembar Informasi Pelayanan                   |
 | `LAB 1-DUMMY.pdf`      | Hasil laboratorium (file 1)                  |
 | `LAB 2-DUMMY.pdf`      | Hasil laboratorium (file 2)                  |
 
@@ -320,15 +316,9 @@ FOLDER_SHARED/
 └── 2025/
     └── 12_DESEMBER REGULER 2025/
         ├── R.JALAN/
-        │   └── 01/
-        │       └── 0069S0020125V000001/
-        │           ├── NAMA_PASIEN.pdf (merged)
-        │           └── LIP.pdf
+        │   └── 0069S0020125V000001.pdf (merged + LIP)
         └── R.INAP/
-            └── 15/
-                └── 0069S0021225V000002/
-                    ├── NAMA_PASIEN.pdf
-                    └── LIP.pdf
+            └── 0069S0021225V000002.pdf (merged + LIP)
 ```
 
 ## ⚙️ Konfigurasi Tambahan

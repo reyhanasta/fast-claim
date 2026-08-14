@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Livewire\ClaimForm;
+use App\Models\BpjsClaim;
 use App\Models\User;
 use App\Services\GenerateFolderService;
 use App\Services\PdfMergerService;
@@ -60,9 +61,9 @@ it('includes lab result in merge order after resume when provided', function () 
     $user = User::factory()->create();
 
     // Mock services
-    $outputDir = 'claims/2025-11-10/SEP123_RJ/';
+    $outputDir = '2025/11_NOVEMBER REGULER 2025/R.JALAN/';
 
-    $mergedOutput = Storage::disk('shared')->path($outputDir.'MERGED.pdf');
+    $mergedOutput = Storage::disk('shared')->path($outputDir.'SEP123.pdf');
 
     $calledWithFiles = null;
 
@@ -172,8 +173,8 @@ it('rejects non-pdf for lab result file 2', function () {
 it('includes both lab result files in merge order before billing', function () {
     $user = User::factory()->create();
 
-    $outputDir = 'claims/2025-11-10/SEP789_RJ/';
-    $mergedOutput = Storage::disk('shared')->path($outputDir.'MERGED.pdf');
+    $outputDir = '2025/11_NOVEMBER REGULER 2025/R.JALAN/';
+    $mergedOutput = Storage::disk('shared')->path($outputDir.'SEP789.pdf');
     $calledWithFiles = null;
 
     $this->mock(GenerateFolderService::class, function ($mock) use ($outputDir) {
@@ -235,4 +236,71 @@ it('includes both lab result files in merge order before billing', function () {
     expect(Str::endsWith($calledWithFiles[4], 'lab3.pdf'))->toBeTrue();
     expect(Str::endsWith($calledWithFiles[5], 'lab4.pdf'))->toBeTrue();
     expect(Str::endsWith($calledWithFiles[6], 'billing.pdf'))->toBeTrue();
+});
+
+it('stores a single SEP-numbered PDF and keeps lip_file_path null when LIP is uploaded', function () {
+    $user = User::factory()->create();
+
+    $outputDir = '2025/11_NOVEMBER REGULER 2025/R.JALAN/';
+
+    $calledWithFiles = null;
+
+    $this->mock(GenerateFolderService::class, function ($mock) use ($outputDir) {
+        $mock->shouldReceive('generateOutputPath')->andReturn($outputDir);
+    });
+
+    $this->mock(PdfMergerService::class, function ($mock) use (&$calledWithFiles) {
+        $mock->shouldReceive('mergePdfs')
+            ->once()
+            ->andReturnUsing(function (array $files, string $outputPath) use (&$calledWithFiles) {
+                $calledWithFiles = $files;
+                Storage::disk('shared')->put($outputPath, 'merged content');
+
+                return $outputPath;
+            });
+        $mock->shouldReceive('cleanupTempFiles')->andReturnTrue();
+    });
+
+    $this->mock(PdfReadService::class, function ($mock) {
+        $mock->shouldReceive('ensureSinglePage')->andReturnNull();
+        $mock->shouldReceive('getPdfTextwithSpatie')->andReturn('FAKE_PDF_TEXT');
+        $mock->shouldReceive('extractPdf')->andReturn([
+            'patient_class' => '1',
+            'medical_record_number' => 'RM001',
+            'patient_name' => 'John Doe',
+            'sep_number' => 'SEP123',
+            'bpjs_number' => '1234567890',
+            'jenis_rawatan' => 'RJ',
+            'sep_date' => '2025-11-10',
+        ]);
+    });
+
+    Livewire::actingAs($user)
+        ->test(ClaimForm::class)
+        ->set('sep_number', 'SEP123')
+        ->set('sep_date', '2025-11-10')
+        ->set('medical_record_number', 'RM001')
+        ->set('patient_name', 'John Doe')
+        ->set('bpjs_number', '1234567890')
+        ->set('patient_class', '1')
+        ->set('sepFile', UploadedFile::fake()->create('sep.pdf', 100))
+        ->set('resumeFile', UploadedFile::fake()->create('resume.pdf', 100))
+        ->set('billingFile', UploadedFile::fake()->create('billing.pdf', 100))
+        ->set('fileLIP', UploadedFile::fake()->create('lip.pdf', 100))
+        ->call('submit')
+        ->assertHasNoErrors();
+
+    // LIP digabung di akhir file hasil merge
+    expect($calledWithFiles)->not->toBeNull();
+    expect(Str::endsWith(end($calledWithFiles), 'lip.pdf'))->toBeTrue();
+
+    // Hanya satu file tersimpan di shared storage: {NO_SEP}.pdf
+    $files = Storage::disk('shared')->allFiles($outputDir);
+    expect($files)->toHaveCount(1);
+    expect($files[0])->toBe($outputDir.'SEP123.pdf');
+
+    $claim = BpjsClaim::where('no_sep', 'SEP123')->first();
+    expect($claim)->not->toBeNull();
+    expect($claim->file_path)->toBe($outputDir.'SEP123.pdf');
+    expect($claim->lip_file_path)->toBeNull();
 });

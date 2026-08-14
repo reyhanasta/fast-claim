@@ -1,10 +1,9 @@
 {
     "agents": [
-        "gemini"
+        "opencode"
     ],
     "editors": [
-        "gemini",
-        "vscode"
+        "opencode"
     ],
     "guidelines": []
 }

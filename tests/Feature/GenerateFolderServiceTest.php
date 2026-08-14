@@ -10,21 +10,25 @@ beforeEach(function () {
 
 it('creates correct folder structure based on date and type', function () {
     $date = '2025-10-06';
-    $sep = '1234567890';
-    $jenis = 'RJ';
 
-    $result = $this->service->generateOutputPath($date, $sep, $jenis);
+    $result = $this->service->generateOutputPath($date, 'RJ');
 
-    // Folder hasil biasanya seperti: 2025/10 OKTOBER RJ/1234567890/
+    // Folder hasil: 2025/10_OKTOBER REGULER 2025/R.JALAN/
+    expect($result)->toBe('2025/10_OKTOBER REGULER 2025/R.JALAN/');
     expect($result)->toContain('2025');
     expect($result)->toContain('R.JALAN');
-    expect($result)->toContain('1234567890');
 
     // Simulasikan bahwa folder benar-benar dibuat di storage fake
     Storage::disk('shared')->makeDirectory($result);
     expect(Storage::disk('shared')->exists($result))->toBeTrue();
 });
 
+it('maps RI to R.INAP folder', function () {
+    $result = $this->service->generateOutputPath('2025-10-06', 'RI');
+
+    expect($result)->toBe('2025/10_OKTOBER REGULER 2025/R.INAP/');
+});
+
 it('throws exception for invalid date format', function () {
-    $this->service->generateOutputPath('invalid-date', 'SEP001', 'RJ');
+    $this->service->generateOutputPath('invalid-date', 'RJ');
 })->throws(Exception::class);
