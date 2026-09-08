@@ -579,7 +579,21 @@
                                             </div>
                                         @endif
                                     </div>
-                                </div>
+
+                                     @foreach ([5, 6, 7, 8] as $labNumber)
+                                         <div class="space-y-3">
+                                             <div class="flex items-center gap-2">
+                                                 <div class="p-2 bg-rose-100 dark:bg-rose-900/30 rounded-lg">
+                                                     <flux:icon.beaker class="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                                                 </div>
+                                                 <div class="flex-grow"><flux:heading size="sm">Hasil Labor {{ $labNumber }}</flux:heading><flux:text size="xs" class="text-gray-500 dark:text-gray-400">Opsional, diikutkan dalam file gabungan</flux:text></div>
+                                             </div>
+                                             <flux:input type="file" wire:model="labResultFile{{ $labNumber }}" accept=".pdf" label="Upload Hasil Lab (PDF)" />
+                                             <div wire:loading wire:target="labResultFile{{ $labNumber }}" class="flex items-center gap-2 text-slate-600"><div class="animate-spin rounded-full h-4 w-4 border-2 border-slate-600 border-t-transparent"></div><span class="text-xs font-medium">Uploading...</span></div>
+                                             @error('labResultFile' . $labNumber)<div class="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-800"><flux:icon.exclamation-circle class="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0" /><flux:text size="sm" class="text-rose-900 dark:text-rose-100">{{ $message }}</flux:text></div>@enderror
+                                             @if ($this->{'labResultFile' . $labNumber})<div class="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-200 dark:border-slate-800"><flux:icon.check-circle class="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" /><flux:text size="sm" class="text-slate-900 dark:text-slate-100 truncate flex-grow">{{ is_object($this->{'labResultFile' . $labNumber}) ? $this->{'labResultFile' . $labNumber}->getClientOriginalName() : 'Hasil Lab ' . $labNumber }}</flux:text></div>@endif
+                                         </div>
+                                     @endforeach                                </div>
                             </div>
 
 
@@ -594,14 +608,14 @@
                                 Progress Upload Dokumen
                             </flux:heading>
                             <flux:text size="sm" class="font-mono text-slate-700 dark:text-slate-300">
-                                {{ collect($this->uploadProgress)->filter()->count() }} / {{ 8 }} File
+                                {{ collect($this->uploadProgress)->filter()->count() }} / {{ 13 }} File
                             </flux:text>
                         </div>
 
                         {{-- Progress Bar --}}
                         <div class="relative h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                             <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-slate-500 to-amber-500 transition-all duration-500 rounded-full"
-                                style="width: {{ (collect($this->uploadProgress)->filter()->count() / 8) * 100 }}%">
+                                style="width: {{ (collect($this->uploadProgress)->filter()->count() / 13) * 100 }}%">
                             </div>
                         </div>
 
@@ -634,7 +648,7 @@
                         @endif
 
                         <flux:button type="submit" variant="primary" icon="check" wire:loading.attr="disabled"
-                            wire:target="submit,resumeFile,billingFile,sepRJFile,fileLIP,labResultFile,labResultFile2,labResultFile3,labResultFile4"
+                            wire:target="submit,resumeFile,billingFile,sepRJFile,fileLIP,labResultFile,labResultFile2,labResultFile3,labResultFile4,labResultFile5,labResultFile6,labResultFile7,labResultFile8"
                             disabled="{{ !$this->canShowSupportingDocuments || !$resumeFile || !$billingFile }}"
                             class="bg-gradient-to-r from-slate-600 via-slate-500 to-slate-400 hover:from-slate-700 hover:via-slate-600 hover:to-slate-500 text-white shadow-lg px-8 disabled:opacity-50 disabled:cursor-not-allowed">
                             <span wire:loading.remove wire:target="submit">Simpan Klaim</span>

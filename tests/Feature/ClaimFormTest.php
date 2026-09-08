@@ -97,12 +97,12 @@ test('billing file accepts pdf, jpg, jpeg, png', function (string $extension) {
         ->assertHasNoErrors(['billingFile']);
 })->with(['pdf', 'jpg', 'jpeg', 'png']);
 
-test('file size cannot exceed 2MB', function () {
+test('file size cannot exceed 20MB', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test(ClaimForm::class)
-        ->set('sepFile', UploadedFile::fake()->create('sep.pdf', 3000)) // 3MB
+        ->set('sepFile', UploadedFile::fake()->create('sep.pdf', 21000)) // 21MB
         ->assertHasErrors(['sepFile']);
 });
 
@@ -175,7 +175,7 @@ test('cancel upload cleans up files and resets state', function () {
 test('locked properties cannot be modified from frontend', function () {
     $user = User::factory()->create();
 
-    expect(fn() => Livewire::actingAs($user)
+    expect(fn () => Livewire::actingAs($user)
         ->test(ClaimForm::class)
         ->set('jenis_rawatan', 'HACKED'))
         ->toThrow(\Exception::class);
@@ -185,7 +185,7 @@ test('constants are defined correctly', function () {
     $reflection = new ReflectionClass(ClaimForm::class);
 
     expect($reflection->getConstant('TEMP_STORAGE_PATH'))->toBe('temp');
-    expect($reflection->getConstant('MAX_FILE_SIZE'))->toBe(300);
+    expect($reflection->getConstant('MAX_FILE_SIZE'))->toBe(20480);
 });
 
 test('validation messages are user friendly', function () {

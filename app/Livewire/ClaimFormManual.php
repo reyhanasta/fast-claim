@@ -26,35 +26,51 @@ class ClaimFormManual extends Component
     use HasAlerts, WithFileUploads;
 
     // File uploads
-    #[Validate('required|file|mimes:pdf|max:2048')]
+    #[Validate('required|file|mimes:pdf|max:20480')]
     public ?TemporaryUploadedFile $sepFile = null;
 
-    #[Validate('nullable|file|mimes:pdf|max:2048')]
+    #[Validate('nullable|file|mimes:pdf|max:20480')]
     public ?TemporaryUploadedFile $sepRJFile = null;
 
-    #[Validate('required|file|mimes:pdf|max:2048')]
+    #[Validate('required|file|mimes:pdf|max:20480')]
     public ?TemporaryUploadedFile $resumeFile = null;
 
-    #[Validate('required|file|mimes:pdf,jpg,jpeg,png|max:2048')]
+    #[Validate('required|file|mimes:pdf,jpg,jpeg,png|max:20480')]
     public ?TemporaryUploadedFile $billingFile = null;
 
     // Lab result (optional, PDF only) – merged into final combined PDF
-    #[Validate('nullable|file|mimes:pdf|max:2048')]
+    #[Validate('nullable|file|mimes:pdf|max:20480')]
     public ?TemporaryUploadedFile $labResultFile = null;
 
     // Lab result (optional, PDF only) – merged into final combined PDF
-    #[Validate('nullable|file|mimes:pdf|max:2048')]
+    #[Validate('nullable|file|mimes:pdf|max:20480')]
     public ?TemporaryUploadedFile $labResultFile2 = null;
 
     // Lab result (optional, PDF only) – merged into final combined PDF
-    #[Validate('nullable|file|mimes:pdf|max:2048')]
+    #[Validate('nullable|file|mimes:pdf|max:20480')]
     public ?TemporaryUploadedFile $labResultFile3 = null;
 
     // Lab result (optional, PDF only) – merged into final combined PDF
-    #[Validate('nullable|file|mimes:pdf|max:2048')]
+    #[Validate('nullable|file|mimes:pdf|max:20480')]
     public ?TemporaryUploadedFile $labResultFile4 = null;
 
-    #[Validate('nullable|file|mimes:pdf|max:2048')]
+    // Lab result (optional, PDF only) – merged into final combined PDF
+    #[Validate('nullable|file|mimes:pdf|max:20480')]
+    public ?TemporaryUploadedFile $labResultFile5 = null;
+
+    // Lab result (optional, PDF only) – merged into final combined PDF
+    #[Validate('nullable|file|mimes:pdf|max:20480')]
+    public ?TemporaryUploadedFile $labResultFile6 = null;
+
+    // Lab result (optional, PDF only) – merged into final combined PDF
+    #[Validate('nullable|file|mimes:pdf|max:20480')]
+    public ?TemporaryUploadedFile $labResultFile7 = null;
+
+    // Lab result (optional, PDF only) – merged into final combined PDF
+    #[Validate('nullable|file|mimes:pdf|max:20480')]
+    public ?TemporaryUploadedFile $labResultFile8 = null;
+
+    #[Validate('nullable|file|mimes:pdf|max:20480')]
     public ?TemporaryUploadedFile $fileLIP = null;
 
     // Patient data
@@ -90,7 +106,7 @@ class ClaimFormManual extends Component
     public bool $showUploadedData = false;
 
     // Constants
-    private const MAX_FILE_SIZE = 5000; // KB
+    private const MAX_FILE_SIZE = 20480; // KB
 
     // File key identifiers
     private const FILE_SEP = 'sepFile';
@@ -111,30 +127,46 @@ class ClaimFormManual extends Component
 
     private const FILE_LAB_RESULT_4 = 'labResultFile4';
 
+    private const FILE_LAB_RESULT_5 = 'labResultFile5';
+
+    private const FILE_LAB_RESULT_6 = 'labResultFile6';
+
+    private const FILE_LAB_RESULT_7 = 'labResultFile7';
+
+    private const FILE_LAB_RESULT_8 = 'labResultFile8';
+
     protected function messages(): array
     {
         return [
             'sepFile.required' => 'File SEP wajib diunggah',
-            'sepFile.mimes' => 'File SEP harus berformat PDF maksimal 2MB',
-            'sepFile.max' => 'File SEP maksimal 2MB',
+            'sepFile.mimes' => 'File SEP harus berformat PDF maksimal 20MB',
+            'sepFile.max' => 'File SEP maksimal 20MB',
             'resumeFile.required' => 'File Resume Medis wajib diunggah',
-            'resumeFile.mimes' => 'File Resume Medis harus berformat PDF maksimal 2MB',
-            'resumeFile.max' => 'File Resume Medis maksimal 2MB',
+            'resumeFile.mimes' => 'File Resume Medis harus berformat PDF maksimal 20MB',
+            'resumeFile.max' => 'File Resume Medis maksimal 20MB',
             'billingFile.required' => 'File Billing wajib diunggah',
-            'billingFile.mimes' => 'File Billing harus berformat PDF/JPG/PNG maksimal 2MB',
-            'billingFile.max' => 'File Billing maksimal 2MB',
-            'fileLIP.mimes' => 'File LIP harus berformat PDF maksimal 2MB',
-            'fileLIP.max' => 'File LIP maksimal 2MB',
-            'sepRJFile.mimes' => 'File SEP RJ harus berformat PDF maksimal 2MB',
-            'sepRJFile.max' => 'File SEP RJ maksimal 2MB',
-            'labResultFile.mimes' => 'File Hasil Labor harus berformat PDF maksimal 2MB',
-            'labResultFile.max' => 'File Hasil Labor maksimal 2MB',
-            'labResultFile2.mimes' => 'File Hasil Labor harus berformat PDF maksimal 2MB',
-            'labResultFile2.max' => 'File Hasil Labor maksimal 2MB',
-            'labResultFile3.mimes' => 'File Hasil Labor harus berformat PDF maksimal 2MB',
-            'labResultFile3.max' => 'File Hasil Labor maksimal 2MB',
-            'labResultFile4.mimes' => 'File Hasil Labor harus berformat PDF maksimal 2MB',
-            'labResultFile4.max' => 'File Hasil Labor maksimal 2MB',
+            'billingFile.mimes' => 'File Billing harus berformat PDF/JPG/PNG maksimal 20MB',
+            'billingFile.max' => 'File Billing maksimal 20MB',
+            'fileLIP.mimes' => 'File LIP harus berformat PDF maksimal 20MB',
+            'fileLIP.max' => 'File LIP maksimal 20MB',
+            'sepRJFile.mimes' => 'File SEP RJ harus berformat PDF maksimal 20MB',
+            'sepRJFile.max' => 'File SEP RJ maksimal 20MB',
+            'labResultFile.mimes' => 'File Hasil Labor harus berformat PDF maksimal 20MB',
+            'labResultFile.max' => 'File Hasil Labor maksimal 20MB',
+            'labResultFile2.mimes' => 'File Hasil Labor harus berformat PDF maksimal 20MB',
+            'labResultFile2.max' => 'File Hasil Labor maksimal 20MB',
+            'labResultFile3.mimes' => 'File Hasil Labor harus berformat PDF maksimal 20MB',
+            'labResultFile3.max' => 'File Hasil Labor maksimal 20MB',
+            'labResultFile4.mimes' => 'File Hasil Labor harus berformat PDF maksimal 20MB',
+            'labResultFile4.max' => 'File Hasil Labor maksimal 20MB',
+            'labResultFile5.mimes' => 'File Hasil Labor harus berformat PDF maksimal 20MB',
+            'labResultFile5.max' => 'File Hasil Labor maksimal 20MB',
+            'labResultFile6.mimes' => 'File Hasil Labor harus berformat PDF maksimal 20MB',
+            'labResultFile6.max' => 'File Hasil Labor maksimal 20MB',
+            'labResultFile7.mimes' => 'File Hasil Labor harus berformat PDF maksimal 20MB',
+            'labResultFile7.max' => 'File Hasil Labor maksimal 20MB',
+            'labResultFile8.mimes' => 'File Hasil Labor harus berformat PDF maksimal 20MB',
+            'labResultFile8.max' => 'File Hasil Labor maksimal 20MB',
             'sep_number.required' => 'Nomor SEP wajib diisi',
             'sep_number.unique' => 'Nomor SEP sudah terdaftar',
             'sep_date.required' => 'Tanggal SEP wajib diisi',
@@ -205,6 +237,10 @@ class ClaimFormManual extends Component
             'labResultFile2' => $this->labResultFile2 !== null,
             'labResultFile3' => $this->labResultFile3 !== null,
             'labResultFile4' => $this->labResultFile4 !== null,
+            'labResultFile5' => $this->labResultFile5 !== null,
+            'labResultFile6' => $this->labResultFile6 !== null,
+            'labResultFile7' => $this->labResultFile7 !== null,
+            'labResultFile8' => $this->labResultFile8 !== null,
         ];
     }
 
@@ -293,6 +329,26 @@ class ClaimFormManual extends Component
     public function updatedLabResultFile4(): void
     {
         $this->processOptionalFile($this->labResultFile4, self::FILE_LAB_RESULT_4);
+    }
+
+    public function updatedLabResultFile5(): void
+    {
+        $this->processOptionalFile($this->labResultFile5, self::FILE_LAB_RESULT_5);
+    }
+
+    public function updatedLabResultFile6(): void
+    {
+        $this->processOptionalFile($this->labResultFile6, self::FILE_LAB_RESULT_6);
+    }
+
+    public function updatedLabResultFile7(): void
+    {
+        $this->processOptionalFile($this->labResultFile7, self::FILE_LAB_RESULT_7);
+    }
+
+    public function updatedLabResultFile8(): void
+    {
+        $this->processOptionalFile($this->labResultFile8, self::FILE_LAB_RESULT_8);
     }
 
     public function updatedJenisRawatan(): void
@@ -514,6 +570,10 @@ class ClaimFormManual extends Component
             $this->temporaryPaths[self::FILE_LAB_RESULT_2] ?? null,
             $this->temporaryPaths[self::FILE_LAB_RESULT_3] ?? null,
             $this->temporaryPaths[self::FILE_LAB_RESULT_4] ?? null,
+            $this->temporaryPaths[self::FILE_LAB_RESULT_5] ?? null,
+            $this->temporaryPaths[self::FILE_LAB_RESULT_6] ?? null,
+            $this->temporaryPaths[self::FILE_LAB_RESULT_7] ?? null,
+            $this->temporaryPaths[self::FILE_LAB_RESULT_8] ?? null,
             $this->temporaryPaths[self::FILE_BILLING] ?? null,
             $this->temporaryPaths[self::FILE_LIP] ?? null,
         ])->filter()->values()->all();
@@ -578,6 +638,10 @@ class ClaimFormManual extends Component
             'labResultFile2',
             'labResultFile3',
             'labResultFile4',
+            'labResultFile5',
+            'labResultFile6',
+            'labResultFile7',
+            'labResultFile8',
             'previewUrls',
             'temporaryPaths',
             'showUploadedData',

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Livewire\ClaimForm;
+use App\Livewire\ClaimFormManual;
 use App\Models\BpjsClaim;
 use App\Models\User;
 use App\Services\GenerateFolderService;
@@ -18,6 +19,83 @@ use function Pest\Laravel\mock;
 beforeEach(function () {
     Storage::fake('public');
     Storage::fake('shared');
+});
+
+it('renders lab result upload fields 5 through 8 on both claim forms', function () {
+    foreach ([ClaimForm::class, ClaimFormManual::class] as $componentClass) {
+        $component = Livewire::actingAs(User::factory()->create())
+            ->test($componentClass)
+            ->set('showUploadedData', true);
+
+        foreach (range(5, 8) as $labNumber) {
+            $component
+                ->assertSee("Hasil Labor {$labNumber}")
+                ->assertSeeHtml("wire:model=\"labResultFile{$labNumber}\"");
+        }
+    }
+});
+
+it('supports optional PDF lab result files 5 through 8 on the claim form', function () {
+    $component = Livewire::actingAs(User::factory()->create())
+        ->test(ClaimForm::class);
+
+    foreach (['labResultFile5', 'labResultFile6', 'labResultFile7', 'labResultFile8'] as $fileKey) {
+        $component->instance()->validateOnly($fileKey);
+        $component->assertHasNoErrors([$fileKey]);
+
+        $component->set($fileKey, UploadedFile::fake()->create("{$fileKey}.pdf", 100));
+        $component->instance()->validateOnly($fileKey);
+        $component->assertHasNoErrors([$fileKey]);
+
+        $component->set($fileKey, UploadedFile::fake()->create("{$fileKey}.jpg", 100));
+        $component->assertHasErrors([$fileKey]);
+    }
+});
+
+it('supports optional PDF lab result files 5 through 8 on the manual claim form', function () {
+    $component = Livewire::actingAs(User::factory()->create())
+        ->test(ClaimFormManual::class);
+
+    foreach (['labResultFile5', 'labResultFile6', 'labResultFile7', 'labResultFile8'] as $fileKey) {
+        $component->instance()->validateOnly($fileKey);
+        $component->assertHasNoErrors([$fileKey]);
+
+        $component->set($fileKey, UploadedFile::fake()->create("{$fileKey}.pdf", 100));
+        $component->instance()->validateOnly($fileKey);
+        $component->assertHasNoErrors([$fileKey]);
+
+        $component->set($fileKey, UploadedFile::fake()->create("{$fileKey}.jpg", 100));
+        $component->assertHasErrors([$fileKey]);
+    }
+});
+
+it('includes lab result temporary paths 5 through 8 in merge order on both claim forms', function () {
+    $temporaryPaths = [
+        'sepFile' => 'sep.pdf',
+        'sepRJFile' => 'sep-rj.pdf',
+        'resumeFile' => 'resume.pdf',
+        'labResultFile' => 'lab1.pdf',
+        'labResultFile2' => 'lab2.pdf',
+        'labResultFile3' => 'lab3.pdf',
+        'labResultFile4' => 'lab4.pdf',
+        'labResultFile5' => 'lab5.pdf',
+        'labResultFile6' => 'lab6.pdf',
+        'labResultFile7' => 'lab7.pdf',
+        'labResultFile8' => 'lab8.pdf',
+        'billingFile' => 'billing.pdf',
+        'fileLIP' => 'lip.pdf',
+    ];
+
+    foreach ([ClaimForm::class, ClaimFormManual::class] as $componentClass) {
+        $component = Livewire::actingAs(User::factory()->create())
+            ->test($componentClass)
+            ->set('temporaryPaths', $temporaryPaths);
+
+        $method = new ReflectionMethod($componentClass, 'getOrderedFilesForMerge');
+        $method->setAccessible(true);
+
+        expect($method->invoke($component->instance()))->toBe(array_values($temporaryPaths));
+    }
 });
 
 it('rejects non-pdf for lab result file', function () {
